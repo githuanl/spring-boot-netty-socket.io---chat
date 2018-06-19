@@ -1,15 +1,13 @@
 package com.neo.exception;
 
+import com.alibaba.fastjson.JSON;
 import com.neo.entity.Result;
-import com.neo.enums.EResultType;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
@@ -23,22 +21,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
-    public Result<String> errorHandler(HttpServletRequest req, Exception e) throws Exception {
-        System.out.println("有异常啦：===》" + e.getMessage());
+    public String errorHandler(HttpServletRequest req, Exception e) throws Exception {
         log(e, req);
-        Result result = new Result(EResultType.GLOABLE_ERROR.getCode(), EResultType.GLOABLE_ERROR.getMsg());
-        return result;
+        return JSON.toJSONString(new Result(-1, e.getMessage()));
     }
 
     @ExceptionHandler(value = ParameterException.class)
     @ResponseBody
-    public Result<String> parameterHandler() throws Exception {
-        Result result = new Result(EResultType.PARAMETER_ERROR.getCode(), EResultType.PARAMETER_ERROR.getMsg());
-        return result;
+    public String parameterHandler(Exception e) throws Exception {
+        return JSON.toJSONString(new Result(-1, e.getMessage()));
     }
 
-
     private void log(Exception ex, HttpServletRequest request) {
+        logger.error("有异常啦：============》" + ex.getMessage());
         logger.error("************************异常开始*******************************");
 //        if(getUser() != null)
 //            logger.error("当前用户id是" + getUser().getUserId());

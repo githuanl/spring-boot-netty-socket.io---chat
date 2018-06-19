@@ -5,8 +5,10 @@ import com.neo.entity.BaseEntity;
 import com.neo.entity.UserEntity;
 import com.neo.serivce.UserSerivice;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.beans.Transient;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,7 +49,7 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
         //获取三十天后日期
         Calendar theCa = Calendar.getInstance();
         theCa.setTime(today);
-        theCa.add(theCa.DATE, 30);//最后一个数字30可改，30天的意思
+        theCa.add(theCa.DATE, 30);
         Date start = theCa.getTime();
         String startDate = sdf.format(start);//三十天之后日期
 

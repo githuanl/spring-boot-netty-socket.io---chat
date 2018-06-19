@@ -2,10 +2,8 @@ package com.neo.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.neo.dao.UserDao;
 import com.neo.entity.UserEntity;
 import com.neo.enums.EResultType;
-import com.neo.exception.ParameterException;
 import com.neo.serivce.UserSerivice;
 import com.neo.utils.SessionUtil;
 import io.netty.util.internal.StringUtil;
@@ -26,7 +24,7 @@ public class UserController extends BaseController<UserEntity> {
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/login")
-    public Object login(String name, String password, HttpSession session) {
+    public String login(String name, String password, HttpSession session) {
 
         if (StringUtil.isNullOrEmpty(name) || StringUtil.isNullOrEmpty(password)) {
             return retResultData(-1, "用户名或密码不能为空");
@@ -37,17 +35,24 @@ public class UserController extends BaseController<UserEntity> {
             if (!user.getPassword().equals(password)) {
                 return retResultData(EResultType.PASSWORK_ERROR);
             }
-            session.setAttribute("userName", user.getPassword());
+            user.setPassword("");
+            session.setAttribute("userName", JSON.toJSONString(user));
         } else {
             return retResultData(EResultType.PASSWORK_ERROR);
         }
-        user.setPassword("");
-        return user;
+        return retResultData(EResultType.SUCCESS, user);
     }
+
+    @RequestMapping(value = "/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "login";
+    }
+
 
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/register")
-    public Object register(String name, String password) {
+    public String register(String name, String password) {
 
         if (StringUtil.isNullOrEmpty(name) || StringUtil.isNullOrEmpty(password)) {
             return retResultData(-1, "用户名或密码不能为空");
@@ -60,7 +65,7 @@ public class UserController extends BaseController<UserEntity> {
 
         user = userSerivice.register(name, password);
 
-        return user;
+        return retResultData(EResultType.SUCCESS, user);
     }
 
     /**
@@ -70,13 +75,13 @@ public class UserController extends BaseController<UserEntity> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/findAllUser")
-    public Object findAllUser() {
+    public String findAllUser() {
 
         JSONObject obj = new JSONObject();
-        obj.put("allUser",userSerivice.selectAll());
+        obj.put("allUser", userSerivice.selectAll());
         obj.put("onLineUsers", SessionUtil.user_socket_Map.keySet());
 
-        return retResultData(EResultType.SUCCESS,obj);
+        return retResultData(EResultType.SUCCESS, obj);
     }
 
 }

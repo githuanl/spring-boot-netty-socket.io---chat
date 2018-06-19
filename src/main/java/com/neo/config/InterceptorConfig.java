@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +39,9 @@ public class InterceptorConfig implements HandlerInterceptor {
         if (!StringUtils.isEmpty(session.getAttribute("userName"))) {
             return true;
         } else {
+            // 跳转登录
+//            String url = "/login";
+//            response.sendRedirect(url);
             PrintWriter printWriter = response.getWriter();
             printWriter.write(JSON.toJSONString(new Result(-1, "please login")));
             return false;

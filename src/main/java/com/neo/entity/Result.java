@@ -9,38 +9,33 @@ public class Result<T> {
     /*返回码*/
     private Integer code;
     /*返回信息提示*/
-    private String message;
+    private String msg;
     /*返回的数据*/
     private T data;
 
     public Result() {
     }
 
-    public Result(Integer code, String message) {
+    public Result(Integer code, String msg) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
 
-    public Result(Integer code, String message, T data) {
+    public Result(Integer code, String msg, T data) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
         this.data = data;
     }
 
     public Result(EResultType type,T data) {
         this.code = type.getCode();
-        this.message = type.getMsg();
+        this.msg = type.getMsg();
         this.data = data;
     }
 
     public Result(EResultType type) {
         this.code = type.getCode();
-        this.message = type.getMsg();
-    }
-
-    @Override
-    public String toString() {
-        return "Result [code=" + code + ", message=" + message + ", data=" + data + "]";
+        this.msg = type.getMsg();
     }
 
     public Integer getCode() {
@@ -51,15 +46,15 @@ public class Result<T> {
         this.code = code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMsg() {
+        return msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 

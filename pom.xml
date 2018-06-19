@@ -48,6 +48,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
+
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
@@ -78,6 +80,7 @@
             <artifactId>spring-boot-devtools</artifactId>
             <version>1.3.0.RELEASE</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.turo</groupId>
