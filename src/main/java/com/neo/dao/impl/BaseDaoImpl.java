@@ -4,21 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mongodb.WriteResult;
 import com.neo.dao.BaseDao;
-import com.neo.dao.UserDao;
 import com.neo.entity.BaseEntity;
-import com.neo.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by summer on 2017/5/5.
@@ -38,7 +33,7 @@ public class BaseDaoImpl<T extends BaseEntity> implements BaseDao<T> {
 
 
     @Override
-    public T getEntityById(String id) {
+    public T findEntityById(String id) {
         Query query = new Query(Criteria.where("id").is(id));
         T t = mongoTemplate.findOne(query, entityClass);
         return t;

@@ -85,7 +85,7 @@ public class ChatLauncher {
 //            String auth_token = hd.getSingleUrlParam("auth_token");
 //
 //            UserEntity userEntity = userSerivice.findUserByToken(auth_token);
-//            String userName = userEntity.getUserName();
+//            String userName = userEntity.getUsername();
 //            //连接上线。
 //            SessionUtil.allLineUser.add(userName);
 //            client.set("userName", userName);

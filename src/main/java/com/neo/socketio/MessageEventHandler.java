@@ -46,14 +46,13 @@ public class MessageEventHandler {
     @OnConnect
     public void onConnect(SocketIOClient client) {
         HandshakeData hd = client.getHandshakeData();
+
         String auth_token = hd.getSingleUrlParam("auth_token");
-
         UserEntity userEntity = userSerivice.findUserByToken(auth_token);
+        String userName = userEntity.getUsername();
 
-        String userName = userEntity.getUserName();
         client.set("userName", userName);
         SessionUtil.user_socket_Map.put(userName, client);
-
         logger.info(userName + "---》上 === 线了  " + client.getSessionId() + "   " + sdf.format(new Date()));
     }
 
@@ -65,9 +64,41 @@ public class MessageEventHandler {
         logger.info(client.get("userName") + "---------》下 线了 " + sdf.format(new Date()));
     }
 
+
+    //创建群
+    @OnEvent(value = "creat")
+    public void onEventCreat(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
+
+    }
+
+    //加入群组
+    @OnEvent(value = "join")
+    public void onEventJoin(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
+
+    }
+
+    //离开群组(退群)
+    @OnEvent(value = "leave")
+    public void onEventLeave(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
+
+    }
+
+    //群聊
+    @OnEvent(value = "groupChat")
+    public void onEventGroupChat(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
+//        server.getRoomOperations()
+    }
+
+
     //消息接收入口，当接收到消息后，查找发送目标客户端，并且向该客户端发送消息，且给自己发送消息
     @OnEvent(value = "chat")
     public void onEvent(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
+
+        if (msg.getFrom_user().equals(msg.getTo_user())) {
+            ackRequest.sendAckData("请不要给自己发消息");
+            return;
+        }
+
         //将数据保存到服务器
         chatSerivice.saveMessageData(msg);
 
@@ -77,6 +108,7 @@ public class MessageEventHandler {
             //发送ack回调数据到客户端
             ackRequest.sendAckData(msg);
         }
+
 
         String to_user = msg.getTo_user();
         // 如果对方在线 则找到对应的client 给其发送消息

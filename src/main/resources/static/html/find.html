@@ -1,0 +1,164 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>查找/添加群组</title>
+<link rel="stylesheet" href="/static/layui/css/layui.css">
+<script src="/static/layui/layui.js"></script>
+</head>
+<body class="gray-bg">
+	<div class="layui-tab layui-tab-card">
+		<ul class="layui-tab-title">
+			<li class="layui-this">找人</li>
+			<li>找群</li>
+		</ul>
+		<div class="layui-tab-content">
+			<div class="layui-tab-item layui-show layui-form layui-friend">
+				<div class="layui-form-item">
+					<input type="text" name="friend_name" placeholder="请输入昵称"
+						autocomplete="off" class="layui-input layui-input-inline">
+					<input type="radio" name="sex" value="0" title="女">
+					<input type="radio" name="sex" value="1" title="男">
+					<input type="radio" name="sex" value="" title="中性" checked>
+					<button id="findFriend" class="layui-btn layui-btn-normal">搜索</button>
+				</div>
+			</div>
+			<div class="layui-tab-item layui-group">
+				<div class="layui-tab-item layui-show layui-form">
+					<div class="layui-form-item">
+						<input type="text" name="group_name" placeholder="请输入群昵称"
+							autocomplete="off" class="layui-input layui-input-inline">
+						<button id="findGroup" class="layui-btn layui-btn-normal">搜索</button>
+						<button id="myGroup" class="layui-btn layui-btn-warm">我的群</button>
+						<button id="createGroup" class="layui-btn">创建群</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	var showAddFriend;
+	var showAddGroup;
+	layui.use([ 'element', 'jquery', 'layer', 'form', 'upload', 'flow'],function() {
+		var element = layui.element, $ = layui.jquery, form = layui.form(), layer = layui.layer,flow = layui.flow;
+		//屏蔽右键菜单
+		$(document).bind("contextmenu",function(e){
+	        return false;
+	    });
+		//父级窗口的对象
+		var socket = parent.socket, layim = parent.layim;
+		//显示添加好友面板
+		showAddFriend = function(item) {
+			var mine = layim.cache().mine;
+			var $item = $(item);
+			var img = $item.find("img").attr("src");
+			var username = $item.find("cite").text();
+			var id = $item.attr("layim-data-uid");
+			var index = layim.add({
+				type: 'friend' //friend：申请加好友、group：申请加群
+				,username: username //好友昵称，若申请加群，参数为：groupname
+				,avatar: img
+				,submit: function(group, remark, index){ //一般在此执行Ajax和WS，以通知对方
+					socket.send(JSON.stringify({
+			    		type:"addFriend",
+			    		mine:mine,
+			    		to:{"id":id},
+			    		msg:JSON.stringify({"groupId":group,"remark":remark,"Type":"0"})
+			    	}));
+					layer.msg('申请已发送，请等待对方确认', {icon: 1,shade: 0.5}, function(){layer.close(index);});
+				}
+			});
+		}
+		$("#createGroup").click(function(){
+			layer.open({
+				  type: 2,
+				  title: "创建群组",
+				  area: ['400px', '270px'], //宽高
+				  content: '/static/html/creategroup.html',
+				  success: function(layero, index){		
+				  }
+			}); 
+		})
+		//显示添加群面板
+		showAddGroup = function(item) {
+			var mine = layim.cache().mine;
+			var $item = $(item);
+			var img = $item.find("img").attr("src");
+			var groupname = $item.find("cite").text();
+			var id = $item.attr("layim-data-uid");
+			var groupId = $item.attr("layim-data-group-id");
+			console.log($item);
+			var index = layim.add({
+				type: 'group' //friend：申请加好友、group：申请加群
+				,groupname: groupname //好友昵称，若申请加群，参数为：groupname
+				,avatar: img
+				,submit: function(group, remark, index){ //一般在此执行Ajax和WS，以通知对方
+					socket.send(JSON.stringify({
+			    		type:"addGroup",
+			    		mine:mine,
+			    		to:{"id":id},
+			    		msg:JSON.stringify({"groupId":groupId,"remark":remark,"Type":"0"})
+			    	}));
+					layer.msg('申请已发送，请等待对方确认', {icon: 1,shade: 0.5}, function(){layer.close(index);});
+				}
+			});
+		}
+		//找人		
+		$("#findFriend").click(function(){
+			$("#users").remove();
+			$(".layui-friend").append("<ul id='users'></ul>");
+			var name = $("input[name='friend_name']").val();
+			var sex = $("input[type='radio']:checked").val();
+			flow.load({
+			    elem: '#users'
+			    ,done: function(page, next){
+			      var lis = [];
+			      var params = "sex="+ sex;
+			      if(name != null && "" != name) {
+			    	  params += "&name=" + name; 
+			      }
+			      $.get('/user/findUsers?' + params + '&page='+page, function(res){
+			    	  res = eval("(" + res + ")");
+		    	      layui.each(res.data, function(index, item){
+		    	    	  var img = '<img style="width: 40px; height: 40px; border-radius: 100%;" src ="' + item.avatar + '"/>';
+		    	    	  var cite = '<cite style="display: block;padding-top:10px; font-size: 14px;">' + item.username + '</cite>';
+		    	    	  var a = '<a style="cursor:pointer" layim-data-uid=' + item.id + ' onclick="showAddFriend(this);">' + img + cite + '</a>';
+		    	    	  var li = '<li class="layim-user" style="margin:20px 20px;display: inline-block;">'+ a +' </li>';	    	  
+		    	          lis.push(li);
+		    	      }); 
+		    	      next(lis.join(''), page < res.pages);    
+			      });
+			    }
+			});	
+		});
+		//找群
+		$("#findGroup").click(function(){
+			var name = $("input[name='group_name']").val();
+			$("#groups").remove();
+			$(".layui-group").append("<ul id='groups'></ul>");
+			flow.load({
+			    elem: '#groups'
+			    ,done: function(page, next){
+			      var lis = [];
+			      var params = 'page='+page;
+			      if(name != null && "" != name) {
+			    	  params += "&name=" + name; 
+			      }
+			      $.get('/user/findGroups?' + params , function(res){
+			    	  res = eval("(" + res + ")");
+		    	      layui.each(res.data, function(index, item){
+		    	    	  var img = '<img style="width: 40px; height: 40px; border-radius: 100%;" src ="' + item.avatar + '"/>';
+		    	    	  var cite = '<cite style="display: block;padding-top:10px; font-size: 14px;">' + item.groupname + '</cite>';
+		    	    	  var a = '<a style="cursor:pointer" layim-data-group-id=' + item.id + ' layim-data-uid=' + item.createId + ' onclick="showAddGroup(this);">' + img + cite + '</a>';
+		    	    	  var li = '<li class="layim-user" style="margin:20px 20px;display: inline-block;">'+ a +' </li>';	    	  
+		    	          lis.push(li);
+		    	      }); 
+		    	      next(lis.join(''), page < res.pages);    
+			      });
+			    }
+			});
+		})
+	});
+</script>
+</html>

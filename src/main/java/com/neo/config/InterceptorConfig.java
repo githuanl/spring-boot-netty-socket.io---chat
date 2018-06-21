@@ -36,7 +36,7 @@ public class InterceptorConfig implements HandlerInterceptor {
 
         log.info("---------------------开始进入请求地址拦截----------------------------");
         HttpSession session = request.getSession();
-        if (!StringUtils.isEmpty(session.getAttribute("userName"))) {
+        if (!StringUtils.isEmpty(session.getAttribute("username"))) {
             return true;
         } else {
             // 跳转登录

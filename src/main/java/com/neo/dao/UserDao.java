@@ -1,17 +1,42 @@
 package com.neo.dao;
 
 import com.neo.entity.BaseEntity;
+import com.neo.entity.GroupEntity;
+import com.neo.entity.GroupUser;
 import com.neo.entity.UserEntity;
+
+import java.util.List;
 
 /**
  * Created by summer on 2017/5/5.
  */
-public interface UserDao<T extends BaseEntity> extends BaseDao<UserEntity>  {
+public interface UserDao<T extends BaseEntity> extends BaseDao<UserEntity> {
 
     //根据名称查询 user
-    public UserEntity findUserByUserName(String name);
+    UserEntity findUserByUserName(String name);
 
     //根据Token查询 user
-    public UserEntity findUserByToken(String access_token);
+    UserEntity findUserByToken(String access_token);
+
+    /**
+     * 创建群组
+     *
+     * @param name
+     * @return
+     */
+    GroupEntity creatGroup(String name, String avatar);
+
+    /**
+     * 获取 我所在的 所有的群
+     *
+     * @return
+     */
+    List<GroupEntity> findGroupsById(String userId);
+
+    /**
+     * 获取 群
+     * @return
+     */
+    List<GroupUser> findUsersByGroupId(String group_id);
 
 }

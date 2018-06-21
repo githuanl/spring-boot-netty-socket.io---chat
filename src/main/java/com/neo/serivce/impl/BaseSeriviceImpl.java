@@ -16,6 +16,7 @@ public class BaseSeriviceImpl<T extends BaseEntity> implements BaseSerivice<T> {
     @Autowired
     BaseDao<T> baseDao;
 
+
     protected Class<T> entityClass;
 
     public BaseSeriviceImpl() {
@@ -26,7 +27,7 @@ public class BaseSeriviceImpl<T extends BaseEntity> implements BaseSerivice<T> {
 
     @Override
     public T getEntityById(String id) {
-        return baseDao.getEntityById(id);
+        return baseDao.findEntityById(id);
     }
 
     @Override

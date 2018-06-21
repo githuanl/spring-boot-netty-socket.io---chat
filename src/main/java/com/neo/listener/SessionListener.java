@@ -11,6 +11,7 @@ import java.util.HashSet;
 /**
  * Created by liudong on 2018/6/15.
  */
+// 要实现监听  需要 打开 WebAppConfig @EnableWebMvc 注解
 @WebListener
 public class SessionListener implements HttpSessionListener, HttpSessionAttributeListener {
     public static final Logger logger = LoggerFactory.getLogger(SessionListener.class);

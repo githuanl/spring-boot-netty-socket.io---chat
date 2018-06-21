@@ -13,7 +13,7 @@ public interface BaseDao<T extends BaseEntity> {
     /**
      * 根据Id查询实体
      */
-    public T getEntityById(String id);
+    public T findEntityById(String id);
 
     /**
      * 新增实体

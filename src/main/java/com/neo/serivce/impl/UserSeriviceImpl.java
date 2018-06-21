@@ -2,16 +2,19 @@ package com.neo.serivce.impl;
 
 import com.neo.dao.UserDao;
 import com.neo.entity.BaseEntity;
+import com.neo.entity.GroupEntity;
+import com.neo.entity.GroupUser;
 import com.neo.entity.UserEntity;
 import com.neo.serivce.UserSerivice;
+import com.neo.utils.DateUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.beans.Transient;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,6 +25,7 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
 
     @Resource
     UserDao userDao;
+
 
     @Override
     public UserEntity findUserByUserName(String name) {
@@ -41,7 +45,7 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
      * @return
      */
     @Override
-    public UserEntity register(String name, String password) {
+    public UserEntity register(String name, String password, String avatar) {
 
         //获取当前日期
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -56,10 +60,58 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
         UserEntity user = new UserEntity();
         user.setAuth_token(UUID.randomUUID().toString());
         user.setAuth_date(startDate);
-        user.setUserName(name);
+        user.setUsername(name);
         user.setPassword(password);
+        user.setAvatar(avatar);
+        user.setSign("一路有你");
         userDao.saveEntity(user);
         return user;
+    }
+
+    @Transactional
+    @Override
+    public GroupEntity creatGroup(String name, String avatar, UserEntity user) {
+
+        //创建 群组
+        GroupEntity entity = new GroupEntity();
+        entity.setCreat_date(DateUtils.getDataTimeYMD());
+        entity.setGroupname(name);
+        entity.setUser_id(user.getId());
+        entity.setUser_name(user.getUsername());
+        entity.setAvatar(avatar);
+        userDao.saveEntity(entity);
+
+        //把自己加入群组
+        GroupUser groupUser = new GroupUser();
+        groupUser.setId(entity.getId());
+        groupUser.setUser_id(user.getId());
+        groupUser.setUsername(user.getUsername());
+        groupUser.setAvatar(user.getAvatar());
+        groupUser.setSign(user.getSign());
+
+        userDao.saveEntity(groupUser);
+
+        return entity;
+    }
+
+    /**
+     * 获取 我所在的 所有的群
+     *
+     * @return
+     */
+    @Override
+    public List<GroupEntity> findGroups(String id) {
+        return userDao.findGroupsById(id);
+    }
+
+    /**
+     * 获取 获取 群下面的所有成员
+     *
+     * @return
+     */
+    @Override
+    public List<GroupUser> findUsersByGroupId(String group_id) {
+        return userDao.findUsersByGroupId(group_id);
     }
 
 

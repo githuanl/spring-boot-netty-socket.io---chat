@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * Created by lh on 2018/6/5.
  */
-@Document(collection = "user")
+@Document(collection = "t_user")
 public class UserEntity extends BaseEntity {
 
 //    userId: Number,
@@ -19,10 +19,14 @@ public class UserEntity extends BaseEntity {
 
     @Id
     private String id;
-    private String userName;
+    private String username;
     private String password;
-    private String auth_token;
-    private String auth_date;
+    private String auth_token;   //token
+    private String auth_date;   //过期时间
+    private String status = "online";      //在线状态 online：在线、hide：隐身
+    private String sign;        //我的签名
+    private String avatar;      //头像
+    private String nickname;    //昵称
 
     public String getId() {
         return id;
@@ -32,12 +36,12 @@ public class UserEntity extends BaseEntity {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -64,14 +68,50 @@ public class UserEntity extends BaseEntity {
         this.auth_date = auth_date;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     @Override
     public String toString() {
         return "UserEntity{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", auth_token='" + auth_token + '\'' +
                 ", auth_date='" + auth_date + '\'' +
+                ", status='" + status + '\'' +
+                ", sign='" + sign + '\'' +
+                ", avatar='" + avatar + '\'' +
+                ", nickname='" + nickname + '\'' +
                 '}';
     }
 }

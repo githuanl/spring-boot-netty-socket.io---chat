@@ -7,13 +7,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * Created by liudong on 2018/6/8.
  */
-@Document(collection = "message")
+@Document(collection = "t_message")
 public class MessageEntity extends BaseEntity {
 
 //        msg_id: String,            //消息id uuid
 //        timestamp: Number,        //发送(服务器)时间
 //        sendtime: Number,        //客户端发送时间
 //        from_user: String,       //发送人
+
 //        to_user: String,         //要发送的人
 //        chat_type: String,      //聊天的类型 chat(单聊)    groupChat (群聊)
 //        group_id: String,        //群聊 房间id (群聊时房间id)
@@ -28,11 +29,13 @@ public class MessageEntity extends BaseEntity {
     private long timestamp;         //发送(服务器)时间
     private String sendtime;        //客户端发送时间
     private String from_user;       //
+    private String from_user_id;     //
     private String to_user;         //
+    private String to_user_id;
     private Chat_type chat_type;       //
     private String group_id;       //
     private String group_name;      //
-    private String ext;             //
+    private String ext;             // 扩展数据
     private Bodies bodies;          //
 
     public String getMsg_id() {
@@ -114,6 +117,22 @@ public class MessageEntity extends BaseEntity {
 
     public void setBodies(Bodies bodies) {
         this.bodies = bodies;
+    }
+
+    public String getFrom_user_id() {
+        return from_user_id;
+    }
+
+    public void setFrom_user_id(String from_user_id) {
+        this.from_user_id = from_user_id;
+    }
+
+    public String getTo_user_id() {
+        return to_user_id;
+    }
+
+    public void setTo_user_id(String to_user_id) {
+        this.to_user_id = to_user_id;
     }
 
     @Override

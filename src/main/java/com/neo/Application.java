@@ -1,10 +1,10 @@
 package com.neo;
 
-import com.corundumstudio.socketio.Configuration;
-import com.corundumstudio.socketio.SocketConfig;
-import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;
+import com.neo.entity.UserEntity;
 import com.neo.serivce.UserSerivice;
+import com.neo.utils.SessionUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,10 +63,18 @@ public class Application {
                 return false;
             }
 
+            UserEntity userEntity = userSerivice.findUserByToken(auth_token);
+            //同一个账号登录多次登录 关闭之前的连接
+            if (userEntity != null && SessionUtil.user_socket_Map.containsKey(userEntity.getUsername())) {
+                SocketIOClient socketIOClient = SessionUtil.user_socket_Map.get(userEntity.getUsername());
+                socketIOClient.sendEvent("otherLogin");
+                return false;
+            }
+
             // 移动设备不能同时登录 (android ios) 待处理
 
             //是否拦截 socket.io 连接
-            return userSerivice.findUserByToken(auth_token) == null ? false : true;
+            return userEntity == null ? false : true;
         });
 
         final SocketIOServer server = new SocketIOServer(config);
