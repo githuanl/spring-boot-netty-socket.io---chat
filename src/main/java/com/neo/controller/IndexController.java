@@ -3,7 +3,7 @@ package com.neo.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.HashMap;
+import javax.servlet.http.HttpSession;
 
 /**
  * Created by liudong on 2018/6/15.
@@ -11,9 +11,11 @@ import java.util.HashMap;
 @Controller
 public class IndexController extends BaseController {
 
-    @RequestMapping("/login")
-    public String index(HashMap<String, Object> map) {
-        map.put("hello", "hello");
-        return "/index";
+    @RequestMapping("/")
+    public String index(HttpSession session) {
+        if (session.getAttribute("username") != null) {
+            return "static/index.html";
+        }
+        return "static/login.html";
     }
 }

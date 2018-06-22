@@ -47,7 +47,7 @@ public interface UserSerivice<T extends BaseEntity> extends BaseSerivice<UserEnt
      *
      * @return
      */
-    List<GroupEntity> findGroups(String id);
+    List<GroupEntity> findMyGroupsByUserId(String id);
 
     /**
      * 获取 群下面的所有成员
@@ -57,4 +57,10 @@ public interface UserSerivice<T extends BaseEntity> extends BaseSerivice<UserEnt
     List<GroupUser> findUsersByGroupId(String group_id);
 
 
+    /**
+     * 根据群的名字查询所有的群
+     *
+     * @return
+     */
+    List<GroupEntity> findGroupsByGroupName(String groupName);
 }

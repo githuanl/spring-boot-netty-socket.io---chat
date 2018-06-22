@@ -27,13 +27,12 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
     var im = {
         init: function () {
 
-
             socket = io.connect('http://192.168.0.33:9006', {
                 query: 'auth_token=' + auth_token,
                 timeout: 15000,
                 reconnection: true,
                 forceNew: false,        //是否创建新的连接
-                reconnectionDelay: 5000,//尝试连接 间隔时间
+                reconnectionDelay: 3000,//尝试连接 间隔时间
                 reconnectionAttempts: 60,//尝试连接的次数
             });
 
@@ -85,8 +84,7 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     }
                     layim.getMessage(msg);
                     break;
-                }
-                    ;
+                };
 
                 //监测好友在线状态
                 case "checkOnline": {
@@ -98,15 +96,14 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     }
                     layim.setChatStatus('<span style="' + style + '">' + json.status + '</span>');
                     break;
-                }
-                    ;
+                };
+
                 //消息盒子
                 case "unHandMessage": {
                     //消息盒子未处理的消息
                     layim.msgbox(json.count);
                     break;
-                }
-                    ;
+                };
                 //删除好友消息，
                 case "delFriend": {
                     var friends = layim.cache().friend;
@@ -117,15 +114,13 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                         , id: json.uId
                     });
                     break;
-                }
-                    ;
+                };
                 //添加好友请求
                 case "addFriend": {
                     layer.alert("有新的用户添加你为好友,请查看消息盒子!", {icon: 0, time: 0, title: "添加信息"});
                     layim.msgbox(1);
                     break;
-                }
-                    ;
+                };
                 //同意添加好友时添加dao好友列表中
                 case "agreeAddFriend": {
                     var group = eval("(" + json.msg + ")");
@@ -139,8 +134,8 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     });
                     layer.alert("用户'" + json.mine.username + "'已同意添加你为好友!", {icon: 0, time: 0, title: "添加信息"});
                     break;
-                }
-                    ;
+                };
+
                 //请求加群
                 case "addGroup": {
                     layer.alert("有新的用户申请加群,请查看消息盒子!", {icon: 0, time: 0, title: "添加信息"});
@@ -184,7 +179,7 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
         //查看群员接口
         , members: {
-            url: '/user/findGroups'
+            url: '/user/findGroupUsers'
             , data: {}
         }
 
@@ -207,11 +202,11 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
             , icon: '&#xe64e;'
         }]
 
-        , title: '我的LayIM' //自定义主面板最小化时的标题
+        , title: '我的IM' //自定义主面板最小化时的标题
         , brief: false //是否简约模式（若开启则不显示主面板）
         , right: '20px' //主面板相对浏览器右侧距离
         , minRight: '20px' //聊天面板最小化时相对浏览器右侧距离
-        , initSkin: '5.jpg' //1-5 设置初始背景
+        , initSkin: '4.jpg' //1-5 设置初始背景
         //,skin: ['aaa.jpg'] //新增皮肤
         , isfriend: true //是否开启好友
         , isgroup: true //是否开启群组
@@ -220,8 +215,8 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
         , voice: true //声音提醒，默认开启，声音文件为：default.wav
 
         , msgbox: '/static/html/msgbox.html' //消息盒子页面地址，若不开启，剔除该项即可
-        , find: '#' //发现页面地址，若不开启，剔除该项即可
-        , chatLog: '/user/chatLogIndex' //聊天记录页面地址，若不开启，剔除该项即可
+        , find: '/static/html/find.html' //发现页面地址，若不开启，剔除该项即可
+        , chatLog: '/static/html/chatlog.html' //聊天记录页面地址，若不开启，剔除该项即可
     });
 
     //监听在线状态的切换事件

@@ -39,7 +39,7 @@
 	layui.use(['jquery', 'layer', 'form', 'upload',],function() {
 		var $ = layui.jquery, form = layui.form(), layer = layui.layer,upload = layui.upload;
 		layui.upload({
-			url: '上传接口url',
+			url: '/user/uploadimg',
 			methos: 'post',
 			before: function(input){
 				console.log(input);

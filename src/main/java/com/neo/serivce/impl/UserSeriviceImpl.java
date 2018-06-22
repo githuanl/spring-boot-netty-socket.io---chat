@@ -100,18 +100,28 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
      * @return
      */
     @Override
-    public List<GroupEntity> findGroups(String id) {
-        return userDao.findGroupsById(id);
+    public List<GroupEntity> findMyGroupsByUserId(String id) {
+        return userDao.findMyGroupsByUserId(id);
     }
 
     /**
-     * 获取 获取 群下面的所有成员
+     * 根据群id  获取 群下面的所有成员
      *
      * @return
      */
     @Override
     public List<GroupUser> findUsersByGroupId(String group_id) {
         return userDao.findUsersByGroupId(group_id);
+    }
+
+    /**
+     * 根据群的名字查询所有的群
+     *
+     * @return
+     */
+    @Override
+    public List<GroupEntity> findGroupsByGroupName(String groupName) {
+        return userDao.findGroupsByGroupName(groupName);
     }
 
 

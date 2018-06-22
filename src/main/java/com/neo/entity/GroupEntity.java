@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "t_group")
 public class GroupEntity extends BaseEntity {
 
-
     @Id
     private String id;          //群id
     private String groupname;   //群的名字

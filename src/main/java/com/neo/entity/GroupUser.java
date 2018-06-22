@@ -19,7 +19,15 @@ public class GroupUser extends BaseEntity {
     // 冗余数据，不想关联查询
     private String avatar;      //群成员的头像
     private String sign;        //签名
+    private Long   joninTime;   //加入时间
 
+    public Long getJoninTime() {
+        return joninTime;
+    }
+
+    public void setJoninTime(Long joninTime) {
+        this.joninTime = joninTime;
+    }
 
     public String getId() {
         return id;

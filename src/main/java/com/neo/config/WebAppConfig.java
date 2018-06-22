@@ -23,11 +23,11 @@ import java.util.List;
 public class WebAppConfig extends WebMvcConfigurerAdapter {
 
 
-     //如果启用了 @EnableWebMvc 注解 必须在这里设置 静态资源路径 properties中的设置将失效
+//    // 如果启用了 @EnableWebMvc 注解 必须在这里设置 静态资源路径 properties中的设置将失效
 //    @Override
 //    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        //将所有/static/** 访问都映射到classpath:/static/ 目录下
-//        registry.addResourceHandler("/static/**")
+//        //将所有/static/** 访问都映射到classpath:/static/  目录下  favicon.ico 太坑爹了。。。
+//        registry.addResourceHandler("/static/**","/favicon.ico")
 //                .addResourceLocations("classpath:/static/", "file:/Users/liudong/Downloads/111111111/");
 //    }
 

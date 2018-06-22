@@ -14,8 +14,6 @@
     </header>
     <section>
         <div id="container_demo">
-            <a class="hiddenanchor" id="toregister"></a>
-            <a class="hiddenanchor" id="tologin"></a>
             <div id="wrapper">
                 <div id="login" class="animate form">
                     <form action="" autocomplete="on" method="post" class="layui-form" lay-filter="login">
@@ -26,7 +24,8 @@
                         </p>
                         <p>
                             <label for="password" class="youpasswd" data-icon="p"> 密码 </label>
-                            <input id="password" name="password" required="required" type="password" placeholder="请输入密码">
+                            <input id="password" name="password" required="required" type="password"
+                                   placeholder="请输入密码">
                         </p>
                         <p class="keeplogin">
                             <input type="checkbox" name="loginkeeping" id="loginkeeping" value="loginkeeping">
@@ -41,40 +40,37 @@
                         </p>
                     </form>
                 </div>
-
-
-
             </div>
         </div>
     </section>
 </div>
 <script type="text/javascript">
-    layui.use(['layer', 'form', 'jquery'], function(){
+    layui.use(['layer', 'form', 'jquery'], function () {
         //layui组件
         var layer = layui.layer, form = layui.form(), $ = layui.jquery;
 
         //登陆
-        form.on('submit(login)', function (data){
-            var d = {'name': $("#uname").val(),'password': $("#password").val()};
+        form.on('submit(login)', function (data) {
+            var d = {'name': $("#uname").val(), 'password': $("#password").val()};
             //loading层
             var index = layer.load(1, {
-                shade: [0.6,'#fff'] //0.1透明度的白色背景
+                shade: [0.6, '#fff'] //0.1透明度的白色背景
             });
             $.ajax({
-                url:"/user/login",
-                type:"POST",
-                data:d,
-                success:function(data) {
+                url: "/user/login",
+                type: "POST",
+                data: d,
+                success: function (data) {
                     layer.close(index);
                     data = JSON.parse(data);
                     if (data.code < 0) {
                         layer.msg(data.msg);
                         $("#password").val("");
-                    } else if(data.code === 1) {
+                    } else if (data.code === 1) {
                         window.location.href = "/static/index.html";
                     }
                 },
-                error:function(data) {
+                error: function (data) {
                     layer.msg("服务器错误,请稍后再试！");
                 }
             });

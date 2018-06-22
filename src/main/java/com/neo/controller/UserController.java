@@ -2,6 +2,7 @@ package com.neo.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.neo.entity.GroupEntity;
 import com.neo.entity.GroupUser;
 import com.neo.entity.UserEntity;
 import com.neo.enums.EResultType;
@@ -37,6 +38,13 @@ public class UserController extends BaseController<UserEntity> {
     @Autowired
     private UserSerivice userSerivice;
 
+    /**
+     * 登录
+     * @param name
+     * @param password
+     * @param session
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/login")
     public String login(String name, String password, HttpSession session) {
@@ -58,20 +66,7 @@ public class UserController extends BaseController<UserEntity> {
         return retResultData(EResultType.SUCCESS, user);
     }
 
-    @RequestMapping(value = "/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "login";
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/getToken")
-    public String getAuthToken(HttpSession session) {
-        UserEntity user = (UserEntity) session.getAttribute("username");
-        return retResultData(EResultType.SUCCESS, user.getAuth_token());
-    }
-
-
+    // 注册
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST, value = "/register")
     public String register(String name, String password, String avatar) {
@@ -90,8 +85,24 @@ public class UserController extends BaseController<UserEntity> {
         return retResultData(EResultType.SUCCESS, user);
     }
 
+    //退出登录
+    @RequestMapping(value = "/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "login";
+    }
+
+    //获取当前登录人的Token
+    @ResponseBody
+    @RequestMapping(value = "/getToken")
+    public String getAuthToken(HttpSession session) {
+        UserEntity user = (UserEntity) session.getAttribute("username");
+        return retResultData(EResultType.SUCCESS, user.getAuth_token());
+    }
+
+
     /**
-     * 目前是 查询所有用户
+     * 目前是 查询系统中的 所有人员
      *
      * @return
      */
@@ -113,10 +124,36 @@ public class UserController extends BaseController<UserEntity> {
 
         //获取所有的群组
         UserEntity userEntity = (UserEntity) session.getAttribute("username");
-        obj.put("group", userSerivice.findGroups(userEntity.getId()));
+        obj.put("group", userSerivice.findMyGroupsByUserId(userEntity.getId()));
 
         return retResultData(0, "", obj);
     }
+
+
+    /**
+     * 加群
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, value = "/addGroup")
+    public String addGroup() {
+        return retResultData(0, "");
+    }
+
+
+    /**
+     * 根据群的名字 查询 对应的群，群名称为空则查询 所有群
+     *
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET, value = "/findGroupsByName")
+    public String findGroupsByName(String page,String name) {
+
+        List<GroupEntity> list = userSerivice.findGroupsByGroupName(name);
+        return retResultData(0, "", list);
+    }
+
 
 
     /**
@@ -125,8 +162,8 @@ public class UserController extends BaseController<UserEntity> {
      * @return
      */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/findGroups")
-    public String findGroups(String id) {
+    @RequestMapping(method = RequestMethod.GET, value = "/findGroupUsers")
+    public String findGroupUsers(String id) {
 
         List<GroupUser> list = userSerivice.findUsersByGroupId(id);
         for (GroupUser user : list) {
@@ -135,19 +172,24 @@ public class UserController extends BaseController<UserEntity> {
         JSONObject obj = new JSONObject();
         obj.put("list", list);
 
-
         return retResultData(0, "", obj);
     }
 
 
-    @Value("${web.upload-path}")
-    private String path;
 
-    //处理文件上传
+    @Value("${web.upload-path}")
+    private String path;        //文件上传的路径
+
+    //文件上传
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public @ResponseBody
     String uploadImg(@RequestParam("file") MultipartFile file,
                      HttpServletRequest request) throws UnknownHostException {
+
+        if(file.isEmpty()){
+            return retResultData(-1, "上传文件不能为空");
+        }
+
 //        String contentType = file.getContentType();
         String fileName = file.getOriginalFilename();
         String uuid = UUID.randomUUID().toString();

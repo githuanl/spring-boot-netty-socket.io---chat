@@ -11,7 +11,9 @@ import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,16 +54,38 @@ public class UserDaoImpl<T extends BaseEntity> extends BaseDaoImpl<UserEntity> i
     }
 
     @Override
-    public List<GroupEntity> findGroupsById(String user_id) {
+    public List<GroupEntity> findMyGroupsByUserId(String user_id) {
         Query query = new Query(Criteria.where("user_id").is(user_id));
         List<GroupEntity> list = mongoTemplate.find(query, GroupEntity.class);
         return list;
     }
 
+    /**
+     * 根据群id 查询群下面的所有的人
+     *
+     * @return
+     */
     @Override
     public List<GroupUser> findUsersByGroupId(String group_id) {
         Query query = new Query(Criteria.where("id").is(group_id));
         List<GroupUser> list = mongoTemplate.find(query, GroupUser.class);
+        return list;
+    }
+
+    /**
+     * 根据群的名字 查询所有的群
+     *
+     * @return
+     */
+    @Override
+    public List<GroupEntity> findGroupsByGroupName(String groupName) {
+        List<GroupEntity> list = new ArrayList<>();
+        if(StringUtils.isEmpty(groupName)){
+            list = mongoTemplate.findAll(GroupEntity.class);
+        }else{
+            Query query = new Query(Criteria.where("groupname").is(groupName));
+            list = mongoTemplate.find(query, GroupEntity.class);
+        }
         return list;
     }
 

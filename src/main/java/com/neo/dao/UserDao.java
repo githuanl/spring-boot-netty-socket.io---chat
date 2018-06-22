@@ -31,12 +31,18 @@ public interface UserDao<T extends BaseEntity> extends BaseDao<UserEntity> {
      *
      * @return
      */
-    List<GroupEntity> findGroupsById(String userId);
+    List<GroupEntity> findMyGroupsByUserId(String userId);
 
     /**
-     * 获取 群
+     * 获取 群 下面的所有人员
      * @return
      */
     List<GroupUser> findUsersByGroupId(String group_id);
 
+    /**
+     * 根据群的名字查询所有的群
+     *
+     * @return
+     */
+    List<GroupEntity> findGroupsByGroupName(String groupName);
 }
