@@ -15,33 +15,11 @@ public interface UserDao<T extends BaseEntity> extends BaseDao<UserEntity> {
     //根据Token查询 user
     UserEntity findUserByToken(String access_token);
 
-    /**
-     * 创建群组
-     *
-     * @param name
-     * @return
-     */
-    GroupEntity creatGroup(String name, String avatar);
 
     /**
-     * 获取 我所在的 所有的群
+     * 根据用户名查询 对应的人员
      *
      * @return
      */
-    List<GroupEntity> findMyGroupsByUserId(String userId);
-
-    /**
-     * 获取 群 下面的所有人员
-     * @return
-     */
-    List<GroupUser> findUsersByGroupId(String group_id);
-
-    /**
-     * 根据群的名字查询所有的群
-     *
-     * @return
-     */
-    List<GroupEntity> findGroupsByGroupName(String groupName);
-
-
+    List<UserEntity> findUsersByName(String page, String name);
 }

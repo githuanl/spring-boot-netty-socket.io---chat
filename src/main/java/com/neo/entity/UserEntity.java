@@ -23,10 +23,19 @@ public class UserEntity extends BaseEntity {
     private String password;
     private String auth_token;   //token
     private String auth_date;   //过期时间
-    private String status = "online";      //在线状态 online：在线、hide：隐身
     private String sign;        //我的签名
     private String avatar;      //头像
     private String nickname;    //昵称
+    private int sex;            //性别 0 男，1，女 2，其他
+
+
+    public int getSex() {
+        return sex;
+    }
+
+    public void setSex(int sex) {
+        this.sex = sex;
+    }
 
     public String getId() {
         return id;
@@ -68,13 +77,6 @@ public class UserEntity extends BaseEntity {
         this.auth_date = auth_date;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public String getSign() {
         return sign;
@@ -108,7 +110,6 @@ public class UserEntity extends BaseEntity {
                 ", password='" + password + '\'' +
                 ", auth_token='" + auth_token + '\'' +
                 ", auth_date='" + auth_date + '\'' +
-                ", status='" + status + '\'' +
                 ", sign='" + sign + '\'' +
                 ", avatar='" + avatar + '\'' +
                 ", nickname='" + nickname + '\'' +

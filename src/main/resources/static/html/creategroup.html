@@ -24,7 +24,10 @@
             <div class="site-demo-upload">
             	<label for="avatar" class="layui-form-label">群头像</label>
                 <div class="site-demo-upbar">
-                     <input name="avatar" class="layui-upload-file" id="avatar" type="file">
+                     <input name="file" class="layui-upload-file" id="avatar" type="file">
+
+                    <img class="layui-upload-img" style="width: 38px;height: 38px;">
+
                 </div>
             </div>
          </div>
@@ -41,15 +44,26 @@
 	layui.use(['jquery', 'layer', 'form', 'upload',],function() {
 		var $ = layui.jquery, form = layui.form(), layer = layui.layer,upload = layui.upload;
 		layui.upload({
-			url: '/user/uploadimg',
+			url: '/user/upload',
 			methos: 'post',
 			before: function(input){
 				console.log(input);
 			},
 			success: function(res){
 				console.log(res); //上传成功返回值，必须为json格式
+                $(".layui-upload-img").attr("src",res.data.src);
 			}
-		});  
+		});
+		$("#btn").click(function () {
+            $.post('/group/creat', {'avatar': $(".layui-upload-img").attr("src"),'name':$("#groupname").val()}, function (res) {
+                //假设这是iframe页
+                var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                parent.layer.close(index); //再执行关闭
+            });
+        });
 	});
+
+
+
 </script>
 </html>

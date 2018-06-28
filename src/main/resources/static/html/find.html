@@ -20,7 +20,7 @@
                        autocomplete="off" class="layui-input layui-input-inline">
                 <input type="radio" name="sex" value="0" title="女">
                 <input type="radio" name="sex" value="1" title="男">
-                <input type="radio" name="sex" value="" title="中性" checked>
+                <input type="radio" name="sex" value="2" title="其他" checked>
                 <button id="findFriend" class="layui-btn layui-btn-normal">搜索</button>
             </div>
         </div>
@@ -99,15 +99,19 @@
                 , submit: function (group, remark, index) { //一般在此执行Ajax和WS，以通知对方
                     socket.emit('addGroup', {
                         fromUid: mine.id,
-                        toUid:id,
+                        toUid: id,
                         groupId: groupId,
                         remark: remark,
                         type: "group",
-                        groupId: groupId,
                     }, function (data) {
-                        layer.msg('申请已发送，请等待对方确认', {icon: 1, shade: 0.5}, function () {
-                            layer.close(index);
-                        });
+                        if (data) {
+                            layer.msg(data, {icon: 0, shade: 0.5});
+                        } else {
+                            layer.msg('申请已发送，请等待对方确认', {icon: 1, shade: 0.5}, function () {
+                                layer.close(index);
+                            });
+                        }
+
                     });
                 }
             });
@@ -126,7 +130,7 @@
                     if (name != null && "" != name) {
                         params += "&name=" + name;
                     }
-                    $.get('/user/findUsers?' + params + '&page=' + page, function (res) {
+                    $.get('/user/findUsersByName?' + params + '&page=' + page, function (res) {
                         res = eval("(" + res + ")");
                         layui.each(res.data, function (index, item) {
                             var img = '<img style="width: 40px; height: 40px; border-radius: 100%;" src ="' + item.avatar + '"/>';
@@ -153,7 +157,7 @@
                     if (name != null && "" != name) {
                         params += "&name=" + name;
                     }
-                    $.get('/user/findGroupsByName?' + params, function (res) {
+                    $.get('/group/findGroupsByName?' + params, function (res) {
                         res = JSON.parse(res);
                         layui.each(res.data, function (index, item) {
                             var img = '<img style="width: 40px; height: 40px; border-radius: 100%;" src ="' + item.avatar + '"/>';

@@ -127,7 +127,7 @@
         //请求消息
         var renderMsg = function (page, callback) {
             //实际部署时，请将下述 getmsg.json 改为你的接口地址
-            $.get('/user/findAddInfo', {page: page || 1}, function (res) {
+            $.get('/addMsg/findAddInfo', {page: page || 1}, function (res) {
                 if (res.code != 0) {
                     return layer.msg(res.msg);
                 }

@@ -3,13 +3,11 @@ package com.neo.serivce.impl;
 import com.neo.dao.AddMessageDao;
 import com.neo.dao.GroupDao;
 import com.neo.dao.UserDao;
-import com.neo.entity.*;
-import com.neo.enums.AddMessageType;
+import com.neo.entity.BaseEntity;
+import com.neo.entity.UserEntity;
 import com.neo.exception.RepeatException;
 import com.neo.serivce.UserSerivice;
-import com.neo.utils.DateUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -84,111 +82,14 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
         return user;
     }
 
-    @Transactional
-    @Override
-    public GroupEntity creatGroup(String name, String avatar, UserEntity user) {
-
-        //不允许 创建重复的群名字
-        if (userDao.findGroupsByGroupName(name).size() > 0) {
-            throw new RepeatException(-1, "群名称不能重复");
-        }
-
-        //创建 群组
-        GroupEntity entity = new GroupEntity();
-        entity.setCreat_date(DateUtils.getDataTimeYMD());
-        entity.setGroupname(name);
-        entity.setUser_id(user.getId());
-        entity.setUser_name(user.getUsername());
-        entity.setAvatar(avatar);
-        userDao.saveEntity(entity);
-
-        //把自己加入群组
-        joinGroup(user, entity.getId());
-
-        return entity;
-    }
-
-
     /**
-     * 更新 添加消息数据
-     *
-     * @param entity
-     * @param messageId
-     * @return
-     */
-    @Override
-    @Transactional
-    public void updateAddMessage(UserEntity entity, String groupId, String messageId) {
-
-
-        if(groupDao.findEntityById(groupId) != null){
-            throw new RepeatException(-1,"不能重复加群");
-        }
-
-        AddMessage addMessage = (AddMessage) addMessageDao.findEntityById(messageId);
-        addMessage.setMsgResult(AddMessageType.Agree);
-        addMessageDao.updateEntityById(messageId, addMessage);
-        joinGroup(entity, groupId);
-
-    }
-
-    /**
-     * 拒绝添加群组，或者，好友
-     * @param messageBoxId
-     */
-    @Override
-    public void updateAddMessage(String messageBoxId) {
-        AddMessage addMessage = (AddMessage) addMessageDao.findEntityById(messageBoxId);
-        addMessage.setMsgResult(AddMessageType.Reject);
-        addMessageDao.saveEntity(addMessage);  //更新数据
-    }
-
-
-    //加入群组
-    @Override
-    public GroupUser joinGroup(UserEntity user, String groupId) {
-
-        GroupUser groupUser = new GroupUser();
-        groupUser.setGroup_id(groupId);
-        groupUser.setUser_id(user.getId());
-        groupUser.setUsername(user.getUsername());
-        groupUser.setAvatar(user.getAvatar());
-        groupUser.setSign(user.getSign());
-        groupUser.setJoninTime(DateUtils.getDataTimeYMDHMS());
-
-        userDao.saveEntity(groupUser);
-        return groupUser;
-    }
-
-
-    /**
-     * 获取 我所在的 所有的群
+     * 根据用户名查询 对应的人员
      *
      * @return
      */
     @Override
-    public List<GroupEntity> findMyGroupsByUserId(String id) {
-        return userDao.findMyGroupsByUserId(id);
-    }
-
-    /**
-     * 根据群id  获取 群下面的所有成员
-     *
-     * @return
-     */
-    @Override
-    public List<GroupUser> findUsersByGroupId(String group_id) {
-        return userDao.findUsersByGroupId(group_id);
-    }
-
-    /**
-     * 根据群的名字查询所有的群
-     *
-     * @return
-     */
-    @Override
-    public List<GroupEntity> findGroupsByGroupName(String groupName) {
-        return userDao.findGroupsByGroupName(groupName);
+    public List<UserEntity> findUsersByName(String page, String name) {
+        return userDao.findUsersByName(page,name);
     }
 
 

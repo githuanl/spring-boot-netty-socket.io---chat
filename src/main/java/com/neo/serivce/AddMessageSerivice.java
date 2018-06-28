@@ -22,4 +22,20 @@ public interface AddMessageSerivice<T extends BaseEntity> extends BaseSerivice<U
      */
     JSONObject findAddInfo(String userId);
 
+
+    /**
+     * 拒绝添加群组，或者，好友
+     * @param messageBoxId
+     */
+    void updateAddMessage(String messageBoxId);
+
+
+    /**
+     * 更新 添加消息数据
+     * @param entity
+     * @param messageId
+     * @return
+     */
+    void updateAddMessage(UserEntity entity,String groupId,String messageId);
+
 }

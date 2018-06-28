@@ -5,12 +5,10 @@ import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
-import com.neo.entity.AddMessage;
-import com.neo.entity.GroupEntity;
-import com.neo.entity.MessageEntity;
-import com.neo.entity.UserEntity;
+import com.neo.entity.*;
 import com.neo.serivce.AddMessageSerivice;
 import com.neo.serivce.ChatSerivice;
+import com.neo.serivce.GroupSerivice;
 import com.neo.serivce.UserSerivice;
 import com.neo.utils.DateUtils;
 import com.neo.utils.SessionUtil;
@@ -38,8 +36,12 @@ public class MessageEventHandler {
 
     @Autowired
     UserSerivice userSerivice;
+
     @Autowired
     ChatSerivice chatSerivice;
+
+    @Autowired
+    GroupSerivice groupSerivice;
 
     @Autowired
     AddMessageSerivice addMessageSerivice;
@@ -67,7 +69,7 @@ public class MessageEventHandler {
         SessionUtil.userId_socket_Map.put(userId, client);
 
         //上线关联所在的群组
-        List<GroupEntity> entityList = userSerivice.findMyGroupsByUserId(userId);
+        List<GroupEntity> entityList = groupSerivice.findMyGroupsByUserId(userId);
 
         for (GroupEntity entity : entityList) {
             logger.info(userName + "自动关联了群 " + entity.getGroupname() + "   " + sdf.format(new Date()));
@@ -86,26 +88,28 @@ public class MessageEventHandler {
     }
 
 
-    //创建群
-    @OnEvent(value = "creat")
-    public void onEventCreat(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
-
-    }
-
     //申请加入群组
     @OnEvent(value = "addGroup")
     public void onEventJoin(SocketIOClient client, AckRequest ackRequest, AddMessage msg) {
 
-        ackRequest.sendAckData("");
         String id = msg.getToUid();
+        //查询群下面的所有人  如果有当前群包含了 自己则说明是重复加群
+        List<GroupUser> groupUsers = groupSerivice.findUsersByGroupId(msg.getGroupId());
+        for (GroupUser user : groupUsers) {
+            if (user.getUser_id().equals(msg.getFromUid())) {
+                ackRequest.sendAckData("请勿重复加群");
+                logger.info("重复加群了。。。。。。兄弟");
+                return;
+            }
+        }
 
+        ackRequest.sendAckData("");
         addMessageSerivice.saveAddMessage(msg);
 
         if (!StringUtils.isEmpty(id) && SessionUtil.userId_socket_Map.containsKey(id)) {
             SocketIOClient socketIOClient = SessionUtil.userId_socket_Map.get(id);
             socketIOClient.sendEvent("addGroup");
         }
-
         logger.info(msg.toString());
     }
 
@@ -116,7 +120,7 @@ public class MessageEventHandler {
         ackRequest.sendAckData("");
 
         String id = object.getString("toUid");
-        userSerivice.updateAddMessage(object.getString("messageBoxId"));
+        addMessageSerivice.updateAddMessage(object.getString("messageBoxId"));
 //
         if (!StringUtils.isEmpty(id) && SessionUtil.userId_socket_Map.containsKey(id)) {
             SocketIOClient socketIOClient = SessionUtil.userId_socket_Map.get(id);
@@ -129,11 +133,14 @@ public class MessageEventHandler {
     @OnEvent(value = "agreeAddGroup")
     public void agreeAddGroup(SocketIOClient client, AckRequest ackRequest, JSONObject object) {
 
-        ackRequest.sendAckData("");
 
         String id = object.getString("toUid");
+        String groupId = object.getString("groupId");
         UserEntity entity = (UserEntity) userSerivice.getEntityById(id);
-        userSerivice.updateAddMessage(entity, object.getString("groupId"), object.getString("messageBoxId"));
+
+        ackRequest.sendAckData("");
+
+        addMessageSerivice.updateAddMessage(entity, groupId, object.getString("messageBoxId"));
 //
         if (!StringUtils.isEmpty(id) && SessionUtil.userId_socket_Map.containsKey(id)) {
             SocketIOClient socketIOClient = SessionUtil.userId_socket_Map.get(id);
@@ -148,14 +155,6 @@ public class MessageEventHandler {
     public void onEventLeave(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
 
     }
-
-
-    //群聊
-    @OnEvent(value = "groupChat")
-    public void onEventGroupChat(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
-//        server.getRoomOperations()
-    }
-
 
     //消息接收入口，当接收到消息后，查找发送目标客户端，并且向该客户端发送消息，且给自己发送消息
     @OnEvent(value = "chat")
@@ -181,12 +180,12 @@ public class MessageEventHandler {
             }
             logger.info("给 " + toName + " 发送的数据 服务器已经收到， 日期： " + sdf.format(new Date()));
             //发送ack回调数据到客户端
-            ackRequest.sendAckData(msg);
+            ackRequest.sendAckData("");
         }
 
 
         String to_user_id = msg.getTo_user_id(); //如果是 群聊，则对应群的id
-        String to_user_name = msg.getFrom_user();
+        String to_user_name = msg.getTo_user();
 
         if (isChat) { //单聊
             // 如果对方在线 则找到对应的client 给其发送消息
@@ -213,7 +212,7 @@ public class MessageEventHandler {
 
 //            server.getBroadcastOperations().sendEvent("groupChat",msg); //系统广播
             // 房间（群内）广播
-            server.getRoomOperations(to_user_id).sendEvent("groupChat", msg, new BroadcastAckCallback<String>(String.class) {
+            server.getRoomOperations(to_user_id).sendEvent("chat", msg, new BroadcastAckCallback<String>(String.class) {
                 @Override
                 protected void onClientTimeout(SocketIOClient client) {
                     logger.info("群消息: " + client.get("userName") + " 发送超时了");

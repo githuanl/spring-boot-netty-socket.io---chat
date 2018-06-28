@@ -2,11 +2,9 @@ package com.neo.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.neo.entity.GroupEntity;
-import com.neo.entity.GroupUser;
 import com.neo.entity.UserEntity;
 import com.neo.enums.EResultType;
-import com.neo.serivce.AddMessageSerivice;
+import com.neo.serivce.GroupSerivice;
 import com.neo.serivce.UserSerivice;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +34,12 @@ public class UserController extends BaseController<UserEntity> {
     UserSerivice userSerivice;
 
     @Autowired
-    AddMessageSerivice addMessageSerivice;
+    GroupSerivice groupSerivice;
+
 
     /**
      * 登录
+     *
      * @param name
      * @param password
      * @return
@@ -67,7 +67,7 @@ public class UserController extends BaseController<UserEntity> {
 
     // 注册
     @ResponseBody
-    @GetMapping( value = "/register")
+    @GetMapping(value = "/register")
     public String register(String name, String password, String avatar) {
 
         if (StringUtil.isNullOrEmpty(name) || StringUtil.isNullOrEmpty(password)) {
@@ -91,17 +91,32 @@ public class UserController extends BaseController<UserEntity> {
         return "/static/index.html";
     }
 
+
     //获取当前登录人的Token
     @ResponseBody
-    @RequestMapping(value = "/getToken")
+    @GetMapping(value = "/getToken")
     public String getAuthToken() {
         return retResultData(EResultType.SUCCESS, getSessionUser().getAuth_token());
     }
 
 
+    //修改 个性签名
+    @ResponseBody
+    @PostMapping(value = "/updateSign")
+    public String updateSign(String sign) {
+
+        UserEntity entity = getSessionUser();
+        entity.setSign(sign);
+        userSerivice.saveEntity(entity);
+
+        return retResultData(0, "修改成功");
+    }
+
+
     /**
      * 目前是 查询系统中的 所有人员
-     *
+     * 及 自己所在的群
+     * 和 创建的群
      * @return
      */
     @ResponseBody
@@ -109,7 +124,7 @@ public class UserController extends BaseController<UserEntity> {
     public String findAllUser() {
 
         //获取所有的群组
-        UserEntity userEntity =getSessionUser();
+        UserEntity userEntity = getSessionUser();
 
         JSONObject obj = new JSONObject();
         obj.put("mine", userEntity);
@@ -123,8 +138,7 @@ public class UserController extends BaseController<UserEntity> {
         array.add(f);
         obj.put("friend", array);
 
-
-        obj.put("group", userSerivice.findMyGroupsByUserId(userEntity.getId()));
+        obj.put("group", groupSerivice.findMyGroupsByUserId(userEntity.getId()));
 
         return retResultData(0, "", obj);
     }
@@ -132,52 +146,16 @@ public class UserController extends BaseController<UserEntity> {
 
     /**
      * 询消息盒子信息
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/findAddInfo")
-    public String findAddInfo(String page) {
-        JSONObject obj = addMessageSerivice.findAddInfo(getSessionUser().getId());
-        return retResultData(0, "",obj);
-    }
-
-
-
-    /**
-     * 根据群的名字 查询 对应的群，群名称为空则查询 所有群
      *
      * @return
      */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/findGroupsByName")
-    public String findGroupsByName(String page,String name) {
+    @RequestMapping(method = RequestMethod.GET, value = "/findUsersByName")
+    public String findUsersByName(String page, String name) {
 
-        List<GroupEntity> list = userSerivice.findGroupsByGroupName(name);
+        List<UserEntity> list = userSerivice.findUsersByName(page, name);
         return retResultData(0, "", list);
     }
-
-
-
-    /**
-     * 查询指定群下面的 群成员
-     *  id 群id
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/findGroupUsers")
-    public String findGroupUsers(String id) {
-
-        List<GroupUser> list = userSerivice.findUsersByGroupId(id);
-        for (GroupUser user : list) {
-            user.setId(user.getUser_id());
-            user.setUser_id("");
-        }
-        JSONObject obj = new JSONObject();
-        obj.put("list", list);
-
-        return retResultData(0, "", obj);
-    }
-
 
 
     @Value("${web.upload-path}")
@@ -189,7 +167,7 @@ public class UserController extends BaseController<UserEntity> {
     String uploadImg(@RequestParam("file") MultipartFile file,
                      HttpServletRequest request) throws UnknownHostException {
 
-        if(file.isEmpty()){
+        if (file.isEmpty()) {
             return retResultData(-1, "上传文件不能为空");
         }
 

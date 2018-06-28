@@ -65,13 +65,17 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
 
             socket.on('chat', function (data, fn) {
-                console.log(JSON.stringify(data))
-                fn('反馈');
+                fn('');
+                //因为没有在服务器端处理 所以发的消息会再次发送给自己
+                var mine = layim.cache().mine;
+                if (mine.id == data.from_user_id) {
+                    return;
+                }
                 im.handleMessage(data);
             });
 
             socket.on('otherLogin', function (data) {
-                layer.msg("账号异地登录！", {icon: 0, time: 0, title: "异地登录"});
+                alert("账号异地登录！");
                 socket.disconnect();
             });
 
@@ -84,25 +88,13 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                 layer.alert("你的加群请求获得同意", {icon: 0, time: 0, title: "加群消息"});
             });
 
-
-            socket.on('groupChat', function (data, fn) {
-                fn('');
-                //因为没有在服务器端处理 所以发的消息会再次发送给自己
-                var mine = layim.cache().mine;
-                if (mine.id == data.from_user_id) {
-                    return;
-                }
-                im.handleMessage(data);
-            });
-
             socket.on('refuseAddGroup', function (data) {
                 layer.alert("加群被拒绝", {icon: 0, time: 0, title: "加群消息"});
             });
 
-            socket.on('connect_error', function () {
-                layer.alert("连接服务器失败！", {icon: 0, time: 0, title: "异地登录"});
-            });
-
+            // socket.on('connect_error', function () {
+            //     layer.alert("连接服务器失败！", {icon: 0, time: 0, title: "异地登录"});
+            // });
 
             socket.on('disconnect', function () {
                 index = layer.msg('你与服务器已断开连接！', {icon: 2, shade: 0.5, time: -1});
@@ -110,7 +102,6 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
             //监听窗口关闭事件，当窗口关闭时，主动去关闭socket连接，防止连接还没断开就关闭窗口
             window.onbeforeunload = function () {
-                window.location.href = "/user/logout"
                 socket.disconnect();
             }
         },
@@ -219,7 +210,7 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
         //查看群员接口
         , members: {
-            url: '/user/findGroupUsers'
+            url: '/group/findGroupUsers'
             , data: {}
         }
 
@@ -365,7 +356,9 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
         }
 
         socket.emit('chat', jsonObject, function (data) {
-            // layer.msg(data);
+            if (data) {
+                layer.msg(data, {icon: 0, shade: 0.5});
+            }
         });
 
     });
