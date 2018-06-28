@@ -8,7 +8,7 @@ import java.util.List;
  * Created by liudong on 2018/6/8.
  */
 
-public interface BaseSerivice<T extends BaseEntity>{
+public interface BaseSerivice<T extends BaseEntity> {
     /**
      * 根据Id查询实体
      */

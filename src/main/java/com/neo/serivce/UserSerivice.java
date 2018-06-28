@@ -43,6 +43,30 @@ public interface UserSerivice<T extends BaseEntity> extends BaseSerivice<UserEnt
 
 
     /**
+     * 更新 添加消息数据
+     * @param entity
+     * @param messageId
+     * @return
+     */
+    void updateAddMessage(UserEntity entity,String groupId,String messageId);
+
+
+    /**
+     * 拒绝添加群组，或者，好友
+     * @param messageBoxId
+     */
+    void updateAddMessage(String messageBoxId);
+
+    /**
+     * 加入群组
+     * @param entity
+     * @param groupId
+     * @return
+     */
+    GroupUser joinGroup(UserEntity entity,String groupId);
+
+
+    /**
      * 获取 我所在的 所有的群
      *
      * @return
@@ -63,4 +87,7 @@ public interface UserSerivice<T extends BaseEntity> extends BaseSerivice<UserEnt
      * @return
      */
     List<GroupEntity> findGroupsByGroupName(String groupName);
+
+
+
 }

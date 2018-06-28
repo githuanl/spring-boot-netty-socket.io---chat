@@ -65,8 +65,8 @@ public class Application {
 
             UserEntity userEntity = userSerivice.findUserByToken(auth_token);
             //同一个账号登录多次登录 关闭之前的连接
-            if (userEntity != null && SessionUtil.user_socket_Map.containsKey(userEntity.getUsername())) {
-                SocketIOClient socketIOClient = SessionUtil.user_socket_Map.get(userEntity.getUsername());
+            if (userEntity != null && SessionUtil.userId_socket_Map.containsKey(userEntity.getId())) {
+                SocketIOClient socketIOClient = SessionUtil.userId_socket_Map.get(userEntity.getId());
                 socketIOClient.sendEvent("otherLogin");
                 return false;
             }

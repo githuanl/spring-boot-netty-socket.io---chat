@@ -6,19 +6,16 @@ import com.neo.entity.GroupEntity;
 import com.neo.entity.GroupUser;
 import com.neo.entity.UserEntity;
 import com.neo.enums.EResultType;
+import com.neo.serivce.AddMessageSerivice;
 import com.neo.serivce.UserSerivice;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -36,18 +33,20 @@ public class UserController extends BaseController<UserEntity> {
     private Integer port;
 
     @Autowired
-    private UserSerivice userSerivice;
+    UserSerivice userSerivice;
+
+    @Autowired
+    AddMessageSerivice addMessageSerivice;
 
     /**
      * 登录
      * @param name
      * @param password
-     * @param session
      * @return
      */
     @ResponseBody
     @RequestMapping(value = "/login")
-    public String login(String name, String password, HttpSession session) {
+    public String login(String name, String password) {
 
         if (StringUtil.isNullOrEmpty(name) || StringUtil.isNullOrEmpty(password)) {
             return retResultData(-1, "用户名或密码不能为空");
@@ -68,7 +67,7 @@ public class UserController extends BaseController<UserEntity> {
 
     // 注册
     @ResponseBody
-    @RequestMapping(method = RequestMethod.POST, value = "/register")
+    @GetMapping( value = "/register")
     public String register(String name, String password, String avatar) {
 
         if (StringUtil.isNullOrEmpty(name) || StringUtil.isNullOrEmpty(password)) {
@@ -87,17 +86,16 @@ public class UserController extends BaseController<UserEntity> {
 
     //退出登录
     @RequestMapping(value = "/logout")
-    public String logout(HttpSession session) {
+    public String logout() {
         session.invalidate();
-        return "login";
+        return "/static/index.html";
     }
 
     //获取当前登录人的Token
     @ResponseBody
     @RequestMapping(value = "/getToken")
-    public String getAuthToken(HttpSession session) {
-        UserEntity user = (UserEntity) session.getAttribute("username");
-        return retResultData(EResultType.SUCCESS, user.getAuth_token());
+    public String getAuthToken() {
+        return retResultData(EResultType.SUCCESS, getSessionUser().getAuth_token());
     }
 
 
@@ -108,10 +106,13 @@ public class UserController extends BaseController<UserEntity> {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, value = "/findAllUser")
-    public String findAllUser(HttpSession session) {
+    public String findAllUser() {
+
+        //获取所有的群组
+        UserEntity userEntity =getSessionUser();
 
         JSONObject obj = new JSONObject();
-        obj.put("mine", session.getAttribute("username"));
+        obj.put("mine", userEntity);
 
         //分组
         JSONArray array = new JSONArray();
@@ -122,8 +123,7 @@ public class UserController extends BaseController<UserEntity> {
         array.add(f);
         obj.put("friend", array);
 
-        //获取所有的群组
-        UserEntity userEntity = (UserEntity) session.getAttribute("username");
+
         obj.put("group", userSerivice.findMyGroupsByUserId(userEntity.getId()));
 
         return retResultData(0, "", obj);
@@ -131,14 +131,16 @@ public class UserController extends BaseController<UserEntity> {
 
 
     /**
-     * 加群
+     * 询消息盒子信息
      * @return
      */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.GET, value = "/addGroup")
-    public String addGroup() {
-        return retResultData(0, "");
+    @RequestMapping(method = RequestMethod.GET, value = "/findAddInfo")
+    public String findAddInfo(String page) {
+        JSONObject obj = addMessageSerivice.findAddInfo(getSessionUser().getId());
+        return retResultData(0, "",obj);
     }
+
 
 
     /**
@@ -158,7 +160,7 @@ public class UserController extends BaseController<UserEntity> {
 
     /**
      * 查询指定群下面的 群成员
-     *
+     *  id 群id
      * @return
      */
     @ResponseBody
@@ -168,6 +170,7 @@ public class UserController extends BaseController<UserEntity> {
         List<GroupUser> list = userSerivice.findUsersByGroupId(id);
         for (GroupUser user : list) {
             user.setId(user.getUser_id());
+            user.setUser_id("");
         }
         JSONObject obj = new JSONObject();
         obj.put("list", list);

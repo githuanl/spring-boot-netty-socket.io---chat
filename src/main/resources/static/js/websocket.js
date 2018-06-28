@@ -27,9 +27,31 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
     var im = {
         init: function () {
 
+            if (socket != null) {
+                return
+            }
+
+            $.ajax({
+                url: "/user/getToken",
+                type: "GET",
+                async: false,
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.code < 0) {
+                        window.location.href = "/static/login.html";
+                    } else {
+                        auth_token = data.data;
+                    }
+                },
+                error: function (data) {
+                    window.location.href = "/static/login.html";
+                }
+            });
+
             socket = io.connect('http://192.168.0.33:9006', {
                 query: 'auth_token=' + auth_token,
                 timeout: 15000,
+                autoConnect: true,
                 reconnection: true,
                 forceNew: false,        //是否创建新的连接
                 reconnectionDelay: 3000,//尝试连接 间隔时间
@@ -43,14 +65,39 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
 
             socket.on('chat', function (data, fn) {
-                fn('给服务器反馈下');
+                console.log(JSON.stringify(data))
+                fn('反馈');
                 im.handleMessage(data);
             });
 
             socket.on('otherLogin', function (data) {
-                alert("你的账号异地登录，请注意");
+                layer.msg("账号异地登录！", {icon: 0, time: 0, title: "异地登录"});
                 socket.disconnect();
             });
+
+            socket.on('addGroup', function () {
+                layer.alert("有新的用户申请加群,请查看消息盒子!", {icon: 0, time: 0, title: "添加信息"});
+                layim.msgbox(1);
+            });
+
+            socket.on('agreeAddGroup', function (data) {
+                layer.alert("你的加群请求获得同意", {icon: 0, time: 0, title: "加群消息"});
+            });
+
+            socket.on('groupChat', function (data,fn) {
+                fn('');
+                console.log(JSON.stringify(data))
+                im.handleMessage(data);
+            });
+
+            socket.on('refuseAddGroup', function (data) {
+                layer.alert("加群被拒绝", {icon: 0, time: 0, title: "加群消息"});
+            });
+
+            socket.on('connect_error', function () {
+                layer.alert("连接服务器失败！", {icon: 0, time: 0, title: "异地登录"});
+            });
+
 
             socket.on('disconnect', function () {
                 index = layer.msg('你与服务器已断开连接！', {icon: 2, shade: 0.5, time: -1});
@@ -58,6 +105,7 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
             //监听窗口关闭事件，当窗口关闭时，主动去关闭socket连接，防止连接还没断开就关闭窗口
             window.onbeforeunload = function () {
+                window.location.href = "/user/logout"
                 socket.disconnect();
             }
         },
@@ -67,15 +115,14 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
             console.log(data);
             switch (data.chat_type) {
                 //处理好友和群消息
-                case "friend":
-                case "group":
+                case "groupChat":
                 case "chat": {
                     var ext = JSON.parse(data.ext);
                     var msg = {
                         username: data.from_user //消息来源用户名
                         , avatar: ext.from_user_avatar //消息来源用户头像
                         , id: data.from_user_id //消息的来源ID（如果是私聊，则是用户id，如果是群聊，则是群组id）
-                        , type: ext.to_type //聊天窗口来源类型，从发送消息传递的to里面获取
+                        , type: data.chat_type == "chat" ? "friend" : "group" //聊天窗口来源类型，从发送消息传递的to里面获取
                         , content: data.bodies.msg //消息内容
                         , cid: data.msg_id //消息id，可不传。除非你要对消息进行一些操作（如撤回）
                         , mine: false //是否我发送的消息，如果为true，则会显示在右方
@@ -84,26 +131,29 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     }
                     layim.getMessage(msg);
                     break;
-                };
+                }
+                    ;
 
                 //监测好友在线状态
                 case "checkOnline": {
                     var style;
-                    if (json.status == "在线") {
+                    if (data.status == "在线") {
                         style = "color:#00EE00;";
                     } else {
                         style = "color:#FF5722;";
                     }
                     layim.setChatStatus('<span style="' + style + '">' + json.status + '</span>');
                     break;
-                };
+                }
+                    ;
 
                 //消息盒子
                 case "unHandMessage": {
                     //消息盒子未处理的消息
-                    layim.msgbox(json.count);
+                    layim.msgbox(data.count);
                     break;
-                };
+                }
+                    ;
                 //删除好友消息，
                 case "delFriend": {
                     var friends = layim.cache().friend;
@@ -111,16 +161,18 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     layer.alert("用户'" + friend.username + "'删除了你!", {icon: 1, time: 0, title: "删除信息"});
                     layim.removeList({
                         type: 'friend'
-                        , id: json.uId
+                        , id: data.uId
                     });
                     break;
-                };
+                }
+                    ;
                 //添加好友请求
                 case "addFriend": {
                     layer.alert("有新的用户添加你为好友,请查看消息盒子!", {icon: 0, time: 0, title: "添加信息"});
                     layim.msgbox(1);
                     break;
-                };
+                }
+                    ;
                 //同意添加好友时添加dao好友列表中
                 case "agreeAddFriend": {
                     var group = eval("(" + json.msg + ")");
@@ -134,37 +186,20 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     });
                     layer.alert("用户'" + json.mine.username + "'已同意添加你为好友!", {icon: 0, time: 0, title: "添加信息"});
                     break;
-                };
-
-                //请求加群
-                case "addGroup": {
-                    layer.alert("有新的用户申请加群,请查看消息盒子!", {icon: 0, time: 0, title: "添加信息"});
-                    layim.msgbox(1);
-                    break;
                 }
+                    ;
+
             }
         }
     }
 
-    $.ajax({
-        url: "/user/getToken",
-        type: "GET",
-        async: false,
-        success: function (data) {
-            data = JSON.parse(data);
-            if (data.code < 0) {
-                window.location.href = "/static/login.html";
-            } else {
-                auth_token = data.data;
-            }
-        },
-        error: function (data) {
-            window.location.href = "/static/login.html";
-        }
-    });
 
     //初始化WebSocket对象
     im.init();
+
+    // var cache = layui.layim.cache();
+    // var local = layui.data('layim'); //获取当前用户本地数据
+    // console.log(JSON.stringify(local))
 
     //基础配置
     layim.config({
@@ -210,9 +245,11 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
         //,skin: ['aaa.jpg'] //新增皮肤
         , isfriend: true //是否开启好友
         , isgroup: true //是否开启群组
+        , isAudio: true //是否开启聊天工具栏音频
+        , isVideo: true //是否开启开启聊天工具栏视频
         , min: false //是否始终最小化主面板，默认false
         , notice: true //是否开启桌面消息提醒，默认false
-        , voice: true //声音提醒，默认开启，声音文件为：default.wav
+        , voice: 'default.wav' //声音提醒，默认开启，声音文件为：default.wav
 
         , msgbox: '/static/html/msgbox.html' //消息盒子页面地址，若不开启，剔除该项即可
         , find: '/static/html/find.html' //发现页面地址，若不开启，剔除该项即可
@@ -290,14 +327,14 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
             from_user_id: data.mine.id,
             to_user: data.to.username,
             to_user_id: data.to.id,
-            chat_type: 'chat',
+            chat_type: data.to.type == "group" ? "groupChat" : "chat",
             bodies: {
                 type: 'txt',
                 msg: data.mine.content,
             },
             ext: JSON.stringify({
                 from_user_avatar: data.mine.avatar,
-                to_type: data.to.type,  //发送的是群消息还是"friend","group"
+                groupname: data.to.groupname, //如果是群聊的话
             })
         };
 

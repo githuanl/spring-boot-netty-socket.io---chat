@@ -4,6 +4,7 @@ import com.neo.dao.BaseDao;
 import com.neo.entity.BaseEntity;
 import com.neo.serivce.BaseSerivice;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -13,9 +14,9 @@ import java.util.List;
  */
 public class BaseSeriviceImpl<T extends BaseEntity> implements BaseSerivice<T> {
 
+    @Qualifier("userDaoImpl")
     @Autowired
     BaseDao<T> baseDao;
-
 
     protected Class<T> entityClass;
 

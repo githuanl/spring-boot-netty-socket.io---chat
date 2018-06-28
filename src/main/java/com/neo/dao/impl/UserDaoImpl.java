@@ -3,10 +3,7 @@ package com.neo.dao.impl;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.neo.dao.UserDao;
-import com.neo.entity.BaseEntity;
-import com.neo.entity.GroupEntity;
-import com.neo.entity.GroupUser;
-import com.neo.entity.UserEntity;
+import com.neo.entity.*;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -55,8 +52,20 @@ public class UserDaoImpl<T extends BaseEntity> extends BaseDaoImpl<UserEntity> i
 
     @Override
     public List<GroupEntity> findMyGroupsByUserId(String user_id) {
+        // 我创建的群
         Query query = new Query(Criteria.where("user_id").is(user_id));
         List<GroupEntity> list = mongoTemplate.find(query, GroupEntity.class);
+
+        //我加过的群
+        List<GroupUser> users = mongoTemplate.find(query, GroupUser.class);
+
+        for (GroupUser user : users) {
+            query = new Query(Criteria.where("id").is(user.getGroup_id()));
+            GroupEntity entity = mongoTemplate.findOne(query, GroupEntity.class);
+            if (!entity.getUser_id().equals(user_id)) { //不是自己创建的群 (只是加入的群)
+                list.add(entity);
+            }
+        }
         return list;
     }
 
@@ -67,7 +76,7 @@ public class UserDaoImpl<T extends BaseEntity> extends BaseDaoImpl<UserEntity> i
      */
     @Override
     public List<GroupUser> findUsersByGroupId(String group_id) {
-        Query query = new Query(Criteria.where("id").is(group_id));
+        Query query = new Query(Criteria.where("group_id").is(group_id));
         List<GroupUser> list = mongoTemplate.find(query, GroupUser.class);
         return list;
     }
@@ -80,9 +89,22 @@ public class UserDaoImpl<T extends BaseEntity> extends BaseDaoImpl<UserEntity> i
     @Override
     public List<GroupEntity> findGroupsByGroupName(String groupName) {
         List<GroupEntity> list = new ArrayList<>();
-        if(StringUtils.isEmpty(groupName)){
+
+        DBObject dbObject = new BasicDBObject();
+        //dbObject.put("name", "zhangsan");  //查询条件
+
+
+        BasicDBObject fieldsObject = new BasicDBObject();
+        //指定返回的字段
+        fieldsObject.put("id", true);
+        fieldsObject.put("groupname", true);
+        fieldsObject.put("user_id", true);
+        fieldsObject.put("user_name", true);
+        fieldsObject.put("avatar", true);
+
+        if (StringUtils.isEmpty(groupName)) {
             list = mongoTemplate.findAll(GroupEntity.class);
-        }else{
+        } else {
             Query query = new Query(Criteria.where("groupname").is(groupName));
             list = mongoTemplate.find(query, GroupEntity.class);
         }

@@ -12,20 +12,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class GroupUser extends BaseEntity {
 
     @Id
-    private String id;    //群 id
+    private String id;
+    private String group_id;    // 群 id
     private String user_id;     //群成员的id
     private String username;    //群成员的名字
 
     // 冗余数据，不想关联查询
     private String avatar;      //群成员的头像
     private String sign;        //签名
-    private Long   joninTime;   //加入时间
+    private String joninTime;   //加入时间
 
-    public Long getJoninTime() {
+    public String getJoninTime() {
         return joninTime;
     }
 
-    public void setJoninTime(Long joninTime) {
+    public void setJoninTime(String joninTime) {
         this.joninTime = joninTime;
     }
 
@@ -68,5 +69,14 @@ public class GroupUser extends BaseEntity {
 
     public void setSign(String sign) {
         this.sign = sign;
+    }
+
+
+    public String getGroup_id() {
+        return group_id;
+    }
+
+    public void setGroup_id(String group_id) {
+        this.group_id = group_id;
     }
 }

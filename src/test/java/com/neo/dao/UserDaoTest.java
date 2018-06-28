@@ -35,12 +35,12 @@ public class UserDaoTest {
 
         UserEntity user = serivice.register("123", "111","http://tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg");
         System.out.println("已生成ID：" + user.getId());
-         user = serivice.register("谢楠", "111","http://tva4.sinaimg.cn/crop.0.1.1125.1125.180/475bb144jw8f9nwebnuhkj20v90vbwh9.jpg");
+         user = serivice.register("111", "111","http://tva4.sinaimg.cn/crop.0.1.1125.1125.180/475bb144jw8f9nwebnuhkj20v90vbwh9.jpg");
         System.out.println("已生成ID：" + user.getId());
-         user = serivice.register("马小云", "111","http://tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg");
+         user = serivice.register("马云", "111","http://tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg");
         System.out.println("已生成ID：" + user.getId());
 
-        user = serivice.register("刘涛tamia", "111","http://tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg");
+        user = serivice.register("刘流", "111","http://tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg");
         System.out.println("已生成ID：" + user.getId());
 
     }

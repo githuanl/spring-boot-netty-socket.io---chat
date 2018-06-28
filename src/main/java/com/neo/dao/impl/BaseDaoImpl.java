@@ -47,7 +47,7 @@ public class BaseDaoImpl<T extends BaseEntity> implements BaseDao<T> {
     @Override
     public T updateEntityById(String id, T entity) {
 
-        Query query = new Query(Criteria.where("id").is(id + ""));
+        Query query = new Query(Criteria.where("id").is(id));
 
         Update update = new Update();
 

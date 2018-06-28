@@ -32,6 +32,13 @@ public class GlobalExceptionHandler {
         return JSON.toJSONString(new Result(-1, e.getMessage()));
     }
 
+    //重复
+    @ExceptionHandler(value = RepeatException.class)
+    @ResponseBody
+    public String repeatHandler(Exception e) throws Exception {
+        return JSON.toJSONString(new Result(-1, e.getMessage()));
+    }
+
     private void log(Exception ex, HttpServletRequest request) {
         logger.error("有异常啦：============》" + ex.getMessage());
         logger.error("************************异常开始*******************************");

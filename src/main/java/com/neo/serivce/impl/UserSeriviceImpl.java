@@ -1,10 +1,11 @@
 package com.neo.serivce.impl;
 
+import com.neo.dao.AddMessageDao;
+import com.neo.dao.GroupDao;
 import com.neo.dao.UserDao;
-import com.neo.entity.BaseEntity;
-import com.neo.entity.GroupEntity;
-import com.neo.entity.GroupUser;
-import com.neo.entity.UserEntity;
+import com.neo.entity.*;
+import com.neo.enums.AddMessageType;
+import com.neo.exception.RepeatException;
 import com.neo.serivce.UserSerivice;
 import com.neo.utils.DateUtils;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,16 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
     @Resource
     UserDao userDao;
 
+    @Resource
+    GroupDao groupDao;
+
+
+    @Resource
+    AddMessageDao addMessageDao;
+
+//        Query.query(Criteria.where("classObj.$id")
+//                .is(new ObjectId("57fa4b99d4c68bb7d044d616"))), Student.class)
+
 
     @Override
     public UserEntity findUserByUserName(String name) {
@@ -46,6 +57,11 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
      */
     @Override
     public UserEntity register(String name, String password, String avatar) {
+
+        //用户名必须唯一
+        if (userDao.findUserByUserName(name) != null) {
+            throw new RepeatException(-1, "用户名不能重复");
+        }
 
         //获取当前日期
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -72,6 +88,11 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
     @Override
     public GroupEntity creatGroup(String name, String avatar, UserEntity user) {
 
+        //不允许 创建重复的群名字
+        if (userDao.findGroupsByGroupName(name).size() > 0) {
+            throw new RepeatException(-1, "群名称不能重复");
+        }
+
         //创建 群组
         GroupEntity entity = new GroupEntity();
         entity.setCreat_date(DateUtils.getDataTimeYMD());
@@ -82,17 +103,63 @@ public class UserSeriviceImpl<T extends BaseEntity> extends BaseSeriviceImpl<Use
         userDao.saveEntity(entity);
 
         //把自己加入群组
+        joinGroup(user, entity.getId());
+
+        return entity;
+    }
+
+
+    /**
+     * 更新 添加消息数据
+     *
+     * @param entity
+     * @param messageId
+     * @return
+     */
+    @Override
+    @Transactional
+    public void updateAddMessage(UserEntity entity, String groupId, String messageId) {
+
+
+        if(groupDao.findEntityById(groupId) != null){
+            throw new RepeatException(-1,"不能重复加群");
+        }
+
+        AddMessage addMessage = (AddMessage) addMessageDao.findEntityById(messageId);
+        addMessage.setMsgResult(AddMessageType.Agree);
+        addMessageDao.updateEntityById(messageId, addMessage);
+        joinGroup(entity, groupId);
+
+    }
+
+    /**
+     * 拒绝添加群组，或者，好友
+     * @param messageBoxId
+     */
+    @Override
+    public void updateAddMessage(String messageBoxId) {
+        AddMessage addMessage = (AddMessage) addMessageDao.findEntityById(messageBoxId);
+        addMessage.setMsgResult(AddMessageType.Reject);
+        addMessageDao.saveEntity(addMessage);  //更新数据
+    }
+
+
+    //加入群组
+    @Override
+    public GroupUser joinGroup(UserEntity user, String groupId) {
+
         GroupUser groupUser = new GroupUser();
-        groupUser.setId(entity.getId());
+        groupUser.setGroup_id(groupId);
         groupUser.setUser_id(user.getId());
         groupUser.setUsername(user.getUsername());
         groupUser.setAvatar(user.getAvatar());
         groupUser.setSign(user.getSign());
+        groupUser.setJoninTime(DateUtils.getDataTimeYMDHMS());
 
         userDao.saveEntity(groupUser);
-
-        return entity;
+        return groupUser;
     }
+
 
     /**
      * 获取 我所在的 所有的群

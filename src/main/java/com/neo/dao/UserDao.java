@@ -1,9 +1,6 @@
 package com.neo.dao;
 
-import com.neo.entity.BaseEntity;
-import com.neo.entity.GroupEntity;
-import com.neo.entity.GroupUser;
-import com.neo.entity.UserEntity;
+import com.neo.entity.*;
 
 import java.util.List;
 
@@ -45,4 +42,6 @@ public interface UserDao<T extends BaseEntity> extends BaseDao<UserEntity> {
      * @return
      */
     List<GroupEntity> findGroupsByGroupName(String groupName);
+
+
 }
