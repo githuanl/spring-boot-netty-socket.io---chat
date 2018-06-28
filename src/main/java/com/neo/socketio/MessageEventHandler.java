@@ -177,8 +177,7 @@ public class MessageEventHandler {
             if (isChat) {
                 toName = msg.getTo_user();
             } else {
-                JSONObject obj = (JSONObject) JSONObject.parse(msg.getExt());
-                toName = "群： " + obj.getString("groupname");
+                toName = "群： " + msg.getTo_user();
             }
             logger.info("给 " + toName + " 发送的数据 服务器已经收到， 日期： " + sdf.format(new Date()));
             //发送ack回调数据到客户端

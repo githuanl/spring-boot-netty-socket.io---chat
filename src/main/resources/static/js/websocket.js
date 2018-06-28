@@ -84,9 +84,14 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                 layer.alert("你的加群请求获得同意", {icon: 0, time: 0, title: "加群消息"});
             });
 
-            socket.on('groupChat', function (data,fn) {
+
+            socket.on('groupChat', function (data, fn) {
                 fn('');
-                console.log(JSON.stringify(data))
+                //因为没有在服务器端处理 所以发的消息会再次发送给自己
+                var mine = layim.cache().mine;
+                if (mine.id == data.from_user_id) {
+                    return;
+                }
                 im.handleMessage(data);
             });
 
@@ -121,12 +126,12 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                     var msg = {
                         username: data.from_user //消息来源用户名
                         , avatar: ext.from_user_avatar //消息来源用户头像
-                        , id: data.from_user_id //消息的来源ID（如果是私聊，则是用户id，如果是群聊，则是群组id）
+                        , id: data.chat_type == "chat" ? data.from_user_id : data.to_user_id//消息的来源ID（如果是私聊，则是用户id，如果是群聊，则是群组id）
                         , type: data.chat_type == "chat" ? "friend" : "group" //聊天窗口来源类型，从发送消息传递的to里面获取
                         , content: data.bodies.msg //消息内容
                         , cid: data.msg_id //消息id，可不传。除非你要对消息进行一些操作（如撤回）
                         , mine: false //是否我发送的消息，如果为true，则会显示在右方
-                        , fromid: data.from_user_id //消息的发送者id（比如群组中的某个消息发送者），可用于自动解决浏览器多窗口时的一些问题
+                        , fromid: data.from_user_id  //消息的发送者id（比如群组中的某个消息发送者），可用于自动解决浏览器多窗口时的一些问题
                         , timestamp: data.timestamp //服务端时间戳毫秒数。注意：如果你返回的是标准的 unix 时间戳，记得要 *1000
                     }
                     layim.getMessage(msg);
@@ -322,21 +327,42 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
 
         console.log(data); // data will be 'woot'
 
-        var jsonObject = {
-            from_user: data.mine.username,
-            from_user_id: data.mine.id,
-            to_user: data.to.username,
-            to_user_id: data.to.id,
-            chat_type: data.to.type == "group" ? "groupChat" : "chat",
-            bodies: {
-                type: 'txt',
-                msg: data.mine.content,
-            },
-            ext: JSON.stringify({
-                from_user_avatar: data.mine.avatar,
-                groupname: data.to.groupname, //如果是群聊的话
-            })
-        };
+        var jsonObject = {};
+
+        var mine = data.mine;
+        var to = data.to;
+
+        if (data.to.type == "group") {
+            jsonObject = {
+                from_user: mine.username,
+                from_user_id: mine.id,
+                to_user: to.groupname,
+                to_user_id: to.id,
+                chat_type: "groupChat",
+                bodies: {
+                    type: 'txt',
+                    msg: mine.content,
+                },
+                ext: JSON.stringify({
+                    from_user_avatar: to.avatar,
+                })
+            };
+        } else {
+            jsonObject = {
+                from_user: mine.username,
+                from_user_id: mine.id,
+                to_user: to.username,
+                to_user_id: to.id,
+                chat_type: "chat",
+                bodies: {
+                    type: 'txt',
+                    msg: mine.content,
+                },
+                ext: JSON.stringify({
+                    from_user_avatar: mine.avatar
+                })
+            };
+        }
 
         socket.emit('chat', jsonObject, function (data) {
             // layer.msg(data);
