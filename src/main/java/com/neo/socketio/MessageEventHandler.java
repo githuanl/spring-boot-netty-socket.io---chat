@@ -160,18 +160,19 @@ public class MessageEventHandler {
     @OnEvent(value = "chat")
     public void onEvent(SocketIOClient client, AckRequest ackRequest, MessageEntity msg) {
 
-        if (msg.getFrom_user().equals(msg.getTo_user())) {
-            ackRequest.sendAckData("请不要给自己发消息");
-            return;
-        }
-
-        //将数据保存到服务器
-        chatSerivice.saveMessageData(msg);
-
         boolean isChat = msg.getChat_type().toString().equals("chat");
 
         //ack 返回数据 服务器收到发送的数据
         if (ackRequest.isAckRequested()) {
+
+            if (msg.getFrom_user().equals(msg.getTo_user())) {
+                ackRequest.sendAckData("请不要给自己发消息");
+                return;
+            }
+
+            //将数据保存到服务器
+            chatSerivice.saveMessageData(msg);
+
             String toName = "";
             if (isChat) {
                 toName = msg.getTo_user();

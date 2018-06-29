@@ -106,6 +106,7 @@ public class UserController extends BaseController<UserEntity> {
     public String updateSign(String sign) {
 
         UserEntity entity = getSessionUser();
+        entity = (UserEntity) userSerivice.getEntityById(entity.getId());
         entity.setSign(sign);
         userSerivice.saveEntity(entity);
 
