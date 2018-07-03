@@ -1,5 +1,7 @@
 package com.neo.dao;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.neo.entity.GpsData;
 import com.neo.entity.GroupEntity;
 import com.neo.entity.UserEntity;
 import com.neo.serivce.GroupSerivice;
@@ -65,6 +67,30 @@ public class UserDaoTest {
         entity = groupSerivice.creatGroup("UI设计", "http://tva2.sinaimg.cn/crop.0.8.751.751.180/961a9be5jw8fczq7q98i7j20kv0lcwfn.jpg", user);
         System.out.println("已生成ID：" + entity.getId());
 
+    }
+
+
+    @Test
+    public  void testProutobu() throws InvalidProtocolBufferException {
+        //模拟将对象转成byte[]，方便传输
+        GpsData.gps_data.Builder builder = GpsData.gps_data.newBuilder();
+        builder.setId(1);
+        builder.setDataTime("2018-07-03");
+        GpsData.gps_data bd = builder.build();
+        System.out.println("before :"+ bd.toString());
+
+        System.out.println("===========Person Byte==========");
+        for(byte b : bd.toByteArray()){
+            System.out.print(b);
+        }
+        System.out.println();
+        System.out.println(bd.toByteString());
+        System.out.println("================================");
+
+        //模拟接收Byte[]，反序列化成Person类
+        byte[] byteArray =bd.toByteArray();
+        GpsData.gps_data gps_data = GpsData.gps_data.parseFrom(byteArray);
+        System.out.println("after :" +gps_data.toString());
     }
 
 

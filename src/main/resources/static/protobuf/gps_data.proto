@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message gps_data {
+    int64 id = 1;
+    string terminalId = 2;
+    string dataTime = 3;
+    double lon = 4;
+    double lat = 5;
+    float speed = 6;
+    int32 altitude = 7;
+    int32 locType = 8;
+    int32 gpsStatus = 9;
+    float direction = 10;
+    int32 satellite = 11;
+}

@@ -1,6 +1,9 @@
 package com.neo;
 
-import com.corundumstudio.socketio.*;
+import com.corundumstudio.socketio.Configuration;
+import com.corundumstudio.socketio.SocketConfig;
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;
 import com.neo.entity.UserEntity;
 import com.neo.serivce.UserSerivice;

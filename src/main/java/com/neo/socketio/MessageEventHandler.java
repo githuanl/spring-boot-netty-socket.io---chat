@@ -5,6 +5,7 @@ import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.neo.entity.*;
 import com.neo.serivce.AddMessageSerivice;
 import com.neo.serivce.ChatSerivice;
@@ -85,6 +86,22 @@ public class MessageEventHandler {
     public void onDisconnect(SocketIOClient client) {
         SessionUtil.userId_socket_Map.remove(client.get("userId"));
         logger.info(client.get("userName") + "---------》下 线了 " + sdf.format(new Date()));
+    }
+
+//      server.addEventListener("protobufTest", byte[].class, (client, data, ackRequest) -> {
+//        GpsData.gps_data gps_data = GpsData.gps_data.parseFrom(data);
+//        System.out.println("after :" + gps_data.toString());
+//    });
+
+
+    //使用protobuf 测试传输的数据
+    @OnEvent(value = "protobufTest")
+    public void onProtobufTest(SocketIOClient client, AckRequest ackRequest, byte[] data) throws InvalidProtocolBufferException {
+        if (ackRequest.isAckRequested()) {
+            ackRequest.sendAckData(data);
+        }
+        GpsData.gps_data gps_data = GpsData.gps_data.parseFrom(data);
+        System.out.println("after :" + gps_data.toString());
     }
 
 
