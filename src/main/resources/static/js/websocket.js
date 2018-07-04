@@ -58,51 +58,46 @@ layui.use(['layim', 'jquery', 'laytpl'], function (layim) {
                 reconnectionAttempts: 60,//尝试连接的次数
             });
 
-            // example code
-            let gps_data;
 
             socket.on('connect', function () {
                 console.log("连接成功");
                 layer.close(index);
-
-                protobuf.load("/static/protobuf/gps_data.proto", function (err, root) {
-                    if (err) throw err;
-
-                    gps_data = root.lookupType("gps_data");
-
-                    let message = gps_data.create({dataTime: "2018-07-03",terminalId:"我们都有一个家名字叫中国"});
-                    console.log(`message = ${JSON.stringify(message)}`);
-
-                    let buffer = gps_data.encode(message).finish();
-                    console.log(`buffer = ${Array.prototype.toString.call(buffer)}`);
-                    console.log(buffer)
-
-                    //参考文章： https://www.cnblogs.com/gradolabs/p/4762134.html
-                    var bufArr = new ArrayBuffer(buffer.length);
-                    var bufView = new Uint8Array(bufArr);
-                    bufView.set(buffer)
-
-                    console.log(bufArr)
-
-                    socket.emit("protobufTest", bufArr, function (data) {
-                        console.log("后台 传回来的 byte 数据 ：==============》")
-
-                        var d = new Uint8Array(data.byteLength);
-                        var dataView = new DataView(data);
-                        for (var i = 0; i < data.byteLength; i++) {
-                            d[i] = dataView.getInt8(i);
-                        }
-                        console.log(d)
-                        let decoded = gps_data.decode(d);
-                        console.log(`decoded = ${JSON.stringify(decoded)}`);
-                    })
-
-                    // let decoded = AwesomeMessage.decode(buffer);
-                    // console.log(`decoded = ${JSON.stringify(decoded)}`);
-                });
-
-
             });
+
+
+            // example code
+            let gps_data;
+
+            protobuf.load("/static/protobuf/gps_data.proto", function (err, root) {
+                if (err) throw err;
+                gps_data = root.lookupType("gps_data");
+                let message = gps_data.create({dataTime: "2018-07-03", terminalId: "222 你好"});
+                console.log(`message = ${JSON.stringify(message)}`);
+
+                let buffer = gps_data.encode(message).finish();
+                console.log(`buffer = ${Array.prototype.toString.call(buffer)}`);
+
+                //参考文章： https://www.cnblogs.com/gradolabs/p/4762134.html
+                var bufArr = new ArrayBuffer(buffer.length);
+                var bufView = new Uint8Array(bufArr);
+                bufView.set(buffer)
+
+                console.log(bufArr)
+
+                socket.emit("protobufTest", bufArr, function (data) {
+                    console.log("后台 传回来的 byte 数据 ：==============》")
+
+                    var d = new Uint8Array(data.byteLength);
+                    var dataView = new DataView(data);
+                    for (var i = 0; i < data.byteLength; i++) {
+                        d[i] = dataView.getInt8(i);
+                    }
+                    console.log(d)
+                    let decoded = gps_data.decode(d);
+                    console.log(`decoded = ${JSON.stringify(decoded)}`);
+                })
+            });
+
 
 
             socket.on('chat', function (data, fn) {

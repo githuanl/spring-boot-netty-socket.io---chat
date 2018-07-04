@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -96,12 +97,12 @@ public class MessageEventHandler {
 
     //使用protobuf 测试传输的数据
     @OnEvent(value = "protobufTest")
-    public void onProtobufTest(SocketIOClient client, AckRequest ackRequest, byte[] data) throws InvalidProtocolBufferException {
+    public void onProtobufTest(SocketIOClient client, AckRequest ackRequest, byte[] data) throws InvalidProtocolBufferException, UnsupportedEncodingException {
         if (ackRequest.isAckRequested()) {
             ackRequest.sendAckData(data);
         }
         GpsData.gps_data gps_data = GpsData.gps_data.parseFrom(data);
-        System.out.println("after :" + gps_data.toString());
+        System.out.println("after :" + gps_data.getTerminalId() + gps_data.getDataTime());
     }
 
 
